@@ -18,13 +18,13 @@ parser.add_argument("DIR",
     nargs = "+")
 
 parser.add_argument("-N",
-    help = "Choose N photos randomly",
+    help = "Choose N files randomly",
     type = int,
     default = 10)
 
 parser.add_argument("--destination",
     metavar = "DIR",
-    help = "Copy photos to DIR")
+    help = "Copy files to DIR")
 
 parser.add_argument("--suffix",
     help = """Only consider files with this SUFFIX. The leading '.' has to be
