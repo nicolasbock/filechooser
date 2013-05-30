@@ -33,7 +33,7 @@ for path in options.DIR:
 
 selectedPhotos = []
 for i in range(options.N):
-  selectedPhotos.append(photos.pop(math.floor(random.random()*len(photos))))
+  selectedPhotos.append(photos.pop(int(math.floor(random.random()*len(photos)))))
 
 if options.destination != None:
   try:
