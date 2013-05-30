@@ -7,6 +7,7 @@ import os.path
 import random
 import shutil
 import sys
+import tempfile
 
 parser = argparse.ArgumentParser()
 
@@ -39,8 +40,12 @@ if options.destination != None:
   try:
     os.mkdir(options.destination)
   except OSError as e:
-    print("error: %s" % (e))
-    sys.exit(1)
+    print("destination path already exists: %s" % (e))
+    backupfolder = tempfile.mkdtemp()
+    print("moving old files to %s" % (backupfolder))
+    for root, dirs, files in os.walk(options.destination):
+      for i in files:
+        shutil.move(os.path.join(root, i), backupfolder)
 
 for i in selectedPhotos:
   print("copying %s" % (i))
