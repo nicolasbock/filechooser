@@ -6,6 +6,7 @@ import os
 import os.path
 import random
 import shutil
+import stat
 import sys
 import tempfile
 
@@ -82,6 +83,12 @@ if options.destination != None:
     for root, dirs, files in os.walk(options.destination):
       for i in files:
         shutil.move(os.path.join(root, i), backupfolder)
+
+  # Set very permissible permissions on destination directory.
+  os.chmod(options.destination,
+      stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR |
+      stat.S_IRGRP | stat.S_IWGRP | stat.S_IXGRP |
+      stat.S_IROTH | stat.S_IWOTH | stat.S_IXOTH)
 
 for i in selectedPhotos:
   if options.verbose:
