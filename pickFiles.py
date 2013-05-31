@@ -27,6 +27,12 @@ parser.add_argument("--destination",
     metavar = "DIR",
     help = "Copy files to DIR")
 
+parser.add_argument("--delete-existing",
+    help = """Delete existing files in the destionation folder instead of
+moving those files to a new location.""",
+    action = "store_true",
+    default = False)
+
 parser.add_argument("--suffix",
     help = """Only consider files with this SUFFIX. The leading '.' has to be
 included, i.e. jpeg files could be added as '.jpg'. By default, all files are
@@ -78,11 +84,18 @@ if options.destination != None:
     os.mkdir(options.destination)
   except OSError as e:
     print("destination path already exists: %s" % (e))
-    backupfolder = tempfile.mkdtemp()
-    print("moving old files to %s" % (backupfolder))
-    for root, dirs, files in os.walk(options.destination):
-      for i in files:
-        shutil.move(os.path.join(root, i), backupfolder)
+
+    if options.delete_existing:
+      print("deleting existing files")
+      for root, dirs, files in os.walk(options.destination):
+        for i in files:
+          os.remove(os.path.join(root, i))
+    else:
+      backupfolder = tempfile.mkdtemp()
+      print("moving old files to %s" % (backupfolder))
+      for root, dirs, files in os.walk(options.destination):
+        for i in files:
+          shutil.move(os.path.join(root, i), backupfolder)
 
   # Set very permissible permissions on destination directory.
   os.chmod(options.destination,
