@@ -29,7 +29,7 @@ parser.add_argument("--destination",
 parser.add_argument("--suffix",
     help = """Only consider files with this SUFFIX. The leading '.' has to be
 included, i.e. jpeg files could be added as '.jpg'. By default, all files are
-be considered.""",
+be considered. The suffix is case insensitive.""",
     action = "append",
     nargs = "+")
 
@@ -46,13 +46,16 @@ if options.suffix != None:
     temp.extend(i)
   options.suffix = temp
 
+  for i in range(len(options.suffix)):
+    options.suffix[i] = options.suffix[i].lower()
+
 photos = []
 for path in options.DIR:
   for root, dirs, files in os.walk(path):
     for i in files:
       if options.suffix != None:
          ( basename, extension ) = os.path.splitext(i)
-         if not extension in options.suffix:
+         if not extension.lower() in options.suffix:
            continue
       photos.append(os.path.join(root, i))
 
