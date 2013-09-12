@@ -8,8 +8,10 @@ JHEAD=jhead
 SED=sed
 CONVERT=convert
 
-# Change the location of the image files here.
-for f in *.jpg; do
+# Change IFS so filenames with spaces are dealt with correctly.
+IFS=$'\n'
+
+for f in $( find path -type f -name '*.jpg' ); do
   orientation=$($JHEAD -v $f | $SED -nr 's:.*Orientation = ([0-9]+).*:\1:p')
 
   if [ -z $orientation ]
