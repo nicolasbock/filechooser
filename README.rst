@@ -4,5 +4,6 @@ single destination folder.
 Example:
 
 ~~~
-pickPhotos.py -N 20 --destination new_folder --suffix .jpg .avi .h -- folder1 folder2
+pick-files -N 20 --destination new_folder --suffix .jpg .avi .h \
+    -- folder1 folder2
 ~~~
