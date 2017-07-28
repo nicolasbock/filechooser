@@ -1,11 +1,12 @@
+.PHONY: build dist upload clean
+
 build:
+	rm -rf build
 	./setup.py build
 
 dist:
+	rm -rf dist
 	./setup.py bdist_wheel --universal
 
-upload: clean dist
+upload: dist
 	twine upload dist/*
-
-clean:
-	git clean -dfx
