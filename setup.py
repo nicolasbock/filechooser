@@ -24,7 +24,6 @@ of folders to a single destination folder""",
             "pick-files = filechooser.main:main"
         ]
     },
-    data_files=[("man", ["man/man1/pick-files.rst"])],
     packages=setuptools.find_packages(),
     test_suite="tests"
 )
