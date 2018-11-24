@@ -21,7 +21,7 @@
 
 project = 'filechooser'
 copyright = '2018, Nicolas Bock <nicolasbock@gmail.com>'
-author = 'Nicolas Bock <nicolasbock@gmail.com>'
+author = 'Guido Bender, Nicolas Bock'
 
 # The short X.Y version
 version = ''
