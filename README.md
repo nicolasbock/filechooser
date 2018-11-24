@@ -1,14 +1,9 @@
 A script that copies a random selection of files from a set of folders
 to a single destination folder.
 
-Installation
-============
-
-The easiest way to install this script is to run
-
-   pip install filechooser
-
-Usage Example
+Documentation
 =============
 
-   pick-files -N 20 --destination new_folder --suffix .jpg .avi .h -- folder1 folder2
+You can find the documentation of this project at
+
+https://filechooser.readthedocs.io/
