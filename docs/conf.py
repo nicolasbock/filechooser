@@ -20,8 +20,8 @@
 # -- Project information -----------------------------------------------------
 
 project = 'filechooser'
-copyright = '2018, Nicolas Bock <nicolasbock@gmail.com>'
-author = 'Guido Bender, Nicolas Bock'
+copyright = '2018, Guido Bender and Nicolas Bock'
+author = 'Guido Bender and Nicolas Bock'
 
 # The short X.Y version
 version = ''
