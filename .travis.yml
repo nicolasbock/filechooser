@@ -1,9 +1,13 @@
 language: python
 
 python:
-    - 2.7
-    - 3.4
+  - 2.7
+  - 3.4
+  - 3.6
+
+install:
+  - pip install -r requirements.txt
 
 script:
-    -  pep8 scripts filechooser tests
-    - ./setup.py test
+  - pep8 scripts filechooser tests
+  - ./setup.py test
