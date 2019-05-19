@@ -6,12 +6,14 @@ workflows:
   version: 2
   test:
     jobs:
-      - docs
       - py27
       - py34
       - py35
       - py36
       - py37
+  docs:
+    jobs:
+      - docs
 
 jobs:
   py27: &test-template
