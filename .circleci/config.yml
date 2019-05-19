@@ -1,0 +1,47 @@
+---
+
+version: 2.0
+
+workflows:
+  version: 2
+  test:
+    jobs:
+      - py27
+      - py34
+      - py36
+
+jobs:
+  py27: &test-template
+    docker:
+      - image: circleci/python:2.7
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - v1-dependencies-{{ checksum "setup.py" }}
+            - v1-dependencies-
+      - run:
+          name: Install dependencies
+          command: |
+            virtualenv venv
+            ./venv/bin/pip install -r requirements.txt
+      - save_cache:
+          paths:
+            - ./venv
+          key: v1-dependencies-{{ checksum "setup.py" }}
+      - run:
+          name: Run pep8
+          command: ./venv/bin/tox -e pep8
+      - run:
+          name: Run tests
+          command: ./venv/bin/tox -e ${CIRCLE_STAGE}
+
+  py34:
+    <<: *test-template
+    docker:
+      - image: circleci/python:3.4
+
+  py36:
+    <<: *test-template
+    docker:
+      - image: circleci/python:3.6
