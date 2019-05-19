@@ -6,6 +6,7 @@ workflows:
   version: 2
   test:
     jobs:
+      - docs
       - py27
       - py34
       - py36
@@ -42,6 +43,11 @@ jobs:
       - image: circleci/python:3.4
 
   py36:
+    <<: *test-template
+    docker:
+      - image: circleci/python:3.6
+
+  docs:
     <<: *test-template
     docker:
       - image: circleci/python:3.6
