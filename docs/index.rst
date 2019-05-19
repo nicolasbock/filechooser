@@ -14,8 +14,8 @@ Introduction
    :target: https://filechooser.readthedocs.io/en/latest/?badge=latest
    :alt: Documentation Status
 
-.. image:: https://travis-ci.org/nicolasbock/filechooser.svg?branch=master
-   :target: https://travis-ci.org/nicolasbock/filechooser
+.. image:: https://circleci.com/gh/nicolasbock/filechooser.svg?style=svg
+    :target: https://circleci.com/gh/nicolasbock/filechooser
 
 A script that copies a random selection of files from a set of folders
 to a single destination folder.
