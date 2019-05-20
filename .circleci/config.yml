@@ -4,7 +4,7 @@ version: 2.0
 
 workflows:
   version: 2
-  build_and_deploy:
+  build:
     jobs:
       - pep8
       - py27:
@@ -14,6 +14,22 @@ workflows:
           requires:
             - pep8
       - docs:
+          requires:
+            - pep8
+  periodic:
+    triggers:
+      - schedule:
+          cron: "0 0 1 * *"
+          filters:
+            branches:
+              only:
+                - master
+    jobs:
+      - pep8
+      - py27:
+          requires:
+            - pep8
+      - py37:
           requires:
             - pep8
 
