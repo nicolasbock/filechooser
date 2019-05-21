@@ -6,16 +6,16 @@ workflows:
   version: 2
   build:
     jobs:
-      - pep8
+      - lint
       - py27:
           requires:
-            - pep8
+            - lint
       - py37:
           requires:
-            - pep8
+            - lint
       - docs:
           requires:
-            - pep8
+            - lint
       - deploy:
           requires:
             - py27
@@ -34,16 +34,16 @@ workflows:
               only:
                 - master
     jobs:
-      - pep8
+      - lint
       - py27:
           requires:
-            - pep8
+            - lint
       - py37:
           requires:
-            - pep8
+            - lint
 
 jobs:
-  pep8: &test-template
+  base: &test-template
     docker:
       - image: circleci/python:2.7
     steps:
@@ -64,6 +64,11 @@ jobs:
       - run:
           name: Run tests
           command: ./venv/bin/tox -e ${CIRCLE_STAGE}
+
+  lint:
+    <<: *test-template
+    docker:
+      - image: circleci/python:2.7
 
   py27:
     <<: *test-template
