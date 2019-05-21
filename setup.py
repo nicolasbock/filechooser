@@ -10,7 +10,7 @@ def readme():
 
 setuptools.setup(
     name="filechooser",
-    version="0.1.2",
+    version="0.1.3",
     author="Nicolas Bock",
     author_email="nicolasbock@gmail.com",
     description="A script that copies a random selection of files from "
