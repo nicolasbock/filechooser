@@ -4,22 +4,46 @@ version: 2.0
 
 workflows:
   version: 2
-  lint:
+  build:
     jobs:
-      - pep8
-  test:
+      - lint
+      - py27:
+          requires:
+            - lint
+      - py37:
+          requires:
+            - lint
+      - docs:
+          requires:
+            - lint
+      - deploy:
+          requires:
+            - py27
+            - py37
+          filters:
+            tags:
+              only: /v[0-9]+([.0-9]+)*/
+            branches:
+              ignore: /.*/
+  periodic:
+    triggers:
+      - schedule:
+          cron: "0 0 1 * *"
+          filters:
+            branches:
+              only:
+                - master
     jobs:
-      - py27
-      - py34
-      - py35
-      - py36
-      - py37
-  docs:
-    jobs:
-      - docs
+      - lint
+      - py27:
+          requires:
+            - lint
+      - py37:
+          requires:
+            - lint
 
 jobs:
-  py27: &test-template
+  base: &test-template
     docker:
       - image: circleci/python:2.7
     steps:
@@ -33,40 +57,36 @@ jobs:
           command: |
             virtualenv venv
             ./venv/bin/pip install -r requirements.txt
-      - save_cache:
-          paths:
-            - ./venv
-          key: v1-dependencies-{{ checksum "setup.py" }}
       - run:
           name: Run tests
           command: ./venv/bin/tox -e ${CIRCLE_STAGE}
+      - save_cache:
+          paths:
+            - ./venv
+            - ./.tox
+          key: v1-dependencies-{{ checksum "setup.py" }}
 
-  py34:
+  lint:
     <<: *test-template
     docker:
-      - image: circleci/python:3.4
+      - image: circleci/python:2.7
 
-  py35:
+  py27:
     <<: *test-template
     docker:
-      - image: circleci/python:3.5
-
-  py36:
-    <<: *test-template
-    docker:
-      - image: circleci/python:3.6
+      - image: circleci/python:2.7
 
   py37:
     <<: *test-template
     docker:
       - image: circleci/python:3.7
 
-  pep8:
+  docs:
     <<: *test-template
     docker:
       - image: circleci/python:3.7
 
-  docs:
+  deploy:
     <<: *test-template
     docker:
       - image: circleci/python:3.7
