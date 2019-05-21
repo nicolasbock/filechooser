@@ -50,7 +50,7 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-            - v1-dependencies-{{ checksum "setup.py" }}
+            - v1-dependencies-{{ .Revision }}
             - v1-dependencies-
       - run:
           name: Install dependencies
@@ -61,10 +61,10 @@ jobs:
           name: Run tests
           command: ./venv/bin/tox -e ${CIRCLE_STAGE}
       - save_cache:
+          key: v1-dependencies-{{ .Revision }}
           paths:
             - ./venv
             - ./.tox
-          key: v1-dependencies-{{ checksum "setup.py" }}
 
   lint:
     <<: *test-template
