@@ -16,6 +16,8 @@ workflows:
       - docs:
           requires:
             - lint
+  deploy:
+    jobs:
       - deploy:
           filters:
             tags:
