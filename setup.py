@@ -4,11 +4,6 @@ import setuptools
 import subprocess
 
 
-def readme():
-    with open("README.md") as fd:
-        return fd.read()
-
-
 def get_latest_tag():
     git = subprocess.Popen(['git', 'describe', '--tags'],
                            stdout=subprocess.PIPE,
@@ -27,13 +22,11 @@ def get_latest_tag():
 setuptools.setup(
     name="filechooser",
     version=get_latest_tag(),
-    author="Nicolas Bock",
-    author_email="nicolasbock@gmail.com",
-    description="A script that copies a random selection of files from "
-    "a set of folders to a single destination folder",
-    long_description=readme(),
     license="BSD",
     url="https://github.com/nicolasbock/filechooser.git",
+    project_urls={
+        "Documentation": "https://setuptools.readthedocs.io/"
+    },
     scripts=["scripts/autorotate.sh"],
     entry_points={
         "console_scripts": [
