@@ -30,7 +30,8 @@ setuptools.setup(
     scripts=["scripts/autorotate.sh"],
     entry_points={
         "console_scripts": [
-            "pick-files = filechooser.main:main"
+            "pick-files = filechooser_legacy.main:main",
+            "pick-files-new = filechooser.main:main"
         ]
     },
     packages=setuptools.find_packages(),
