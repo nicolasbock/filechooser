@@ -10,6 +10,7 @@ class TestPick(unittest.TestCase):
     def tearDown(self):
         pass
 
-    def test_pick_file(self):
-        self.assertEqual(pick_file.pick_file(), "picture_a.jpg")
+    def test_get_image_files(self):
+        self.assertEqual(pick_file.get_image_files(
+            ["a", "b"]), ["a/picture_a.jpg", "b/picture_b.jpg"])
         assert(True)
