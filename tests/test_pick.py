@@ -1,5 +1,6 @@
 import os
 import pathlib
+import shutil
 import tempfile
 import unittest
 
@@ -31,8 +32,7 @@ class TestPick(unittest.TestCase):
             pathlib.Path(os.path.join(self.fs_base, image)).touch()
 
     def tearDown(self):
-        print("tearDown")
-        pass
+        shutil.rmtree(self.fs_base)
 
     def test_get_image_files(self):
         image_files = sorted(pick_file.get_image_files(
