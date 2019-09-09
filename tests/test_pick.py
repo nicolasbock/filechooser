@@ -1,5 +1,4 @@
 import os
-import pathlib
 import shutil
 import tempfile
 import unittest
@@ -25,12 +24,11 @@ class TestPick(unittest.TestCase):
         for image in images:
             path = os.path.dirname(image)
             try:
-                os.makedirs(os.path.join(self.fs_base, path), exist_ok=True)
-            except FileExistsError as e:
-                print("Can not create path {}".format(
-                    os.path.join(self.fs_base, path)))
-                raise e
-            pathlib.Path(os.path.join(self.fs_base, image)).touch()
+                os.makedirs(os.path.join(self.fs_base, path))
+            except OSError as e:
+                pass
+            with open(os.path.join(self.fs_base, image), "w"):
+                pass
 
     def tearDown(self):
         shutil.rmtree(self.fs_base)
@@ -45,5 +43,5 @@ class TestPick(unittest.TestCase):
         self.assertEqual(image_files, reference_image_files)
 
     def test_get_image_files_not_exist(self):
-        with self.assertRaisesRegex(Exception, "does not exist"):
+        with self.assertRaisesRegexp(Exception, "does not exist"):
             pick_file.get_image_files(["does_not_exist"])
