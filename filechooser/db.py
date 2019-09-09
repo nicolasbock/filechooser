@@ -39,7 +39,7 @@ def set_timestamp(filename):
 
 
 def get_timestamp(filename):
-    # type: (str) -> int
+    # type: (str) -> List[Dict]
     """Get the timestamp of filename. If there is no timestamp in the
     database, return None.
     """

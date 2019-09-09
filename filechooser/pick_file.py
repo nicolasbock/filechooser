@@ -6,7 +6,7 @@ try:
 except ImportError:
     pass
 
-from filechooser.db import set_timestamp
+from filechooser.db import get_timestamp, set_timestamp
 from filechooser.logger import logger
 
 image_file_extensions = [
@@ -40,6 +40,18 @@ def get_image_files(paths):
             if filetype[0] in image_file_extensions:
                 result.append(path)
     return result
+
+
+def get_image_timestamp(filename):
+    # type: (str) -> float
+    """Get the timestamp of a file (i.e. when it was last chosen).
+
+    Given a "filename", return a timestamp of when this file was last
+    chosen. If the file hasn't been chosen so far, i.e. the file is
+    new, return None.
+    """
+    result = get_timestamp(filename)
+    return result[0]["timestamp"]
 
 
 def set_image_timestamp(filename):

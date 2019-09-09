@@ -65,3 +65,11 @@ class TestPick(unittest.TestCase):
                 os.path.join(self.fs_base, images[0]))
         result = db.get_timestamp(os.path.join(self.fs_base, images[0]))
         self.assertEqual(result[0]["timestamp"], 1.0)
+
+    def test_get_image_timestamp(self):
+        with mock.patch("filechooser.db.time", return_value=1.0):
+            pick_file.set_image_timestamp(
+                os.path.join(self.fs_base, images[0]))
+        result = pick_file.get_image_timestamp(
+            os.path.join(self.fs_base, images[0]))
+        self.assertEqual(result, 1.0)
