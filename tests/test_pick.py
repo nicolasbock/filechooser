@@ -39,7 +39,8 @@ class TestPick(unittest.TestCase):
             [os.path.join(self.fs_base, "collection_a"),
              os.path.join(self.fs_base, "collection_b")]))
         reference_image_files = sorted(
-            [os.path.join(self.fs_base, p) for p in images if p.split(".")[-1] != "txt"])
+            [os.path.join(self.fs_base, p) for p in images
+             if p.split(".")[-1] != "txt"])
         self.assertEqual(image_files, reference_image_files)
 
     def test_get_image_files_not_exist(self):
