@@ -18,10 +18,8 @@ def get_image_files(paths):
 
     """
 
-    print("called with {}".format(paths))
     result = []
     for path in paths:
-        print("Checking {}".format(path))
         if not os.path.exists(path):
             raise Exception("The path {} does not exist".format(path))
         if os.path.isdir(path):
@@ -30,12 +28,6 @@ def get_image_files(paths):
             result += get_image_files(new_paths)
         else:
             filetype = mimetypes.guess_type("file://" + path)
-            print("checking file {} {}".format(path, filetype))
             if filetype[0] in image_file_extensions:
-                print("adding image file {}".format(path))
                 result.append(path)
-            else:
-                print("file {} {} does not have a supported type".format(
-                    path, filetype))
-    print("returning {}".format(result))
     return result

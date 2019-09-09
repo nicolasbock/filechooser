@@ -19,14 +19,9 @@ class TestPick(unittest.TestCase):
         # Create a filesystem structure in a temporary location. This
         # should eventually be replaced with something in memory, i.e.
         # using `pyfakefs`.
-        print("setUp")
-
         self.fs_base = tempfile.mkdtemp()
-        print("fs_base: {}".format(self.fs_base))
-
         for image in images:
             path = os.path.dirname(image)
-            print("creating path = {} for {}".format(path, image))
             try:
                 os.makedirs(os.path.join(self.fs_base, path), exist_ok=True)
             except FileExistsError as e:
