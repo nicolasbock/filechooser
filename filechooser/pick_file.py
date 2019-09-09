@@ -39,3 +39,12 @@ def get_image_files(paths):
             if filetype[0] in image_file_extensions:
                 result.append(path)
     return result
+
+
+def set_image_timestamp(filename):
+    # type: (str) -> None
+    """Set the timestamp of a file, i.e. when it was chosen.
+
+    The timestamp for "filename" is set to the current time.
+    """
+    pass
