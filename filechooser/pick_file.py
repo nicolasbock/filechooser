@@ -1,6 +1,8 @@
 import mimetypes
 import os.path
 
+from filechooser.logger import logger
+
 image_file_extensions = [
     "image/jpeg",
     "image/gif",
@@ -20,6 +22,7 @@ def get_image_files(paths):
 
     result = []
     for path in paths:
+        logger.debug("Testing path {}".format(path))
         if not os.path.exists(path):
             raise Exception("The path {} does not exist".format(path))
         if os.path.isdir(path):
