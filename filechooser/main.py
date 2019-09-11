@@ -1,2 +1,5 @@
+from filechooser.logger import logger
+
+
 def main():
-    print("here")
+    logger.info("starting")
