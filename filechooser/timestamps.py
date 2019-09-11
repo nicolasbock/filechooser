@@ -8,6 +8,7 @@ query = None
 
 
 def initialize_db():
+    # type: () -> None
     """Initializes the database, creating it in case it didn't exist
     before.
     """
@@ -20,6 +21,7 @@ def initialize_db():
 
 
 def store_timestamp(filename, timestamp):
+    # type: (str, int) -> None
     """Stores or updates the timestamp of filename.
     """
     global db, query
@@ -30,6 +32,7 @@ def store_timestamp(filename, timestamp):
 
 
 def get_timestamp(filename):
+    # type: (str) -> int
     """Get the timestamp of filename. If there is no timestamp in the
     database, return None.
     """
@@ -38,7 +41,8 @@ def get_timestamp(filename):
 
 
 def dump_db():
-    """Prints out all records currently stored in the database.
+    # type: () -> List(Dict)
+    """Gets all records currently stored in the database.
     """
     global db
     return(db.all())
