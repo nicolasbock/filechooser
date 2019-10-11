@@ -1,5 +1,9 @@
 from tinydb import TinyDB, Query
-from typing import Dict, List
+
+try:
+    from typing import Dict, List
+except Exception:
+    pass
 
 from filechooser.logger import logger
 

@@ -1,7 +1,10 @@
 import mimetypes
 import os.path
 
-from typing import List
+try:
+    from typing import List
+except Exception:
+    pass
 
 from filechooser.logger import logger
 
