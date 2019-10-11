@@ -1,6 +1,8 @@
 import mimetypes
 import os.path
 
+from typing import List
+
 from filechooser.logger import logger
 
 image_file_extensions = [
@@ -20,7 +22,7 @@ def get_image_files(paths):
 
     """
 
-    result = []
+    result = []  # type: List[str]
     for path in paths:
         logger.debug("Testing path {}".format(path))
         if not os.path.exists(path):

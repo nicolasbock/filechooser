@@ -1,10 +1,11 @@
 from tinydb import TinyDB, Query
+from typing import Dict, List
 
 from filechooser.logger import logger
 
 database = "file-timestamps-db.json"
-db = None
-query = None
+db = None  # type: TinyDB
+query = None  # type: Query
 
 
 def initialize_db():
@@ -41,7 +42,7 @@ def get_timestamp(filename):
 
 
 def dump_db():
-    # type: () -> List(Dict)
+    # type: () -> List[Dict]
     """Gets all records currently stored in the database.
     """
     global db
