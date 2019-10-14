@@ -25,7 +25,7 @@ def initialize_db():
         query = Query()
 
 
-def store_timestamp(filename, timestamp):
+def set_timestamp(filename, timestamp):
     # type: (str, int) -> None
     """Stores or updates the timestamp of filename.
     """
