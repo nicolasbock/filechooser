@@ -3,9 +3,10 @@ import os.path
 
 try:
     from typing import List
-except Exception:
+except ImportError:
     pass
 
+from filechooser.db import set_timestamp
 from filechooser.logger import logger
 
 image_file_extensions = [
@@ -47,4 +48,4 @@ def set_image_timestamp(filename):
 
     The timestamp for "filename" is set to the current time.
     """
-    pass
+    set_timestamp(filename)
