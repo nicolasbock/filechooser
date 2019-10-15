@@ -1,3 +1,4 @@
+from time import time
 from tinydb import TinyDB, Query
 
 try:
@@ -25,11 +26,12 @@ def initialize_db():
         query = Query()
 
 
-def store_timestamp(filename, timestamp):
-    # type: (str, int) -> None
+def set_timestamp(filename):
+    # type: (str) -> None
     """Stores or updates the timestamp of filename.
     """
     global db, query
+    timestamp = time()
     logger.debug(
         "storing/updating timestamp {} {}".format(filename, timestamp))
     db.upsert({'filename': filename, 'timestamp': timestamp},

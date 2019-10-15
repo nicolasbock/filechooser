@@ -2,7 +2,12 @@ import os
 import tempfile
 import unittest
 
-import filechooser.timestamps as timestamps
+try:
+    from unittest import mock
+except ImportError:
+    import mock
+
+import filechooser.db as db
 from filechooser.logger import logger
 
 
@@ -13,21 +18,25 @@ class TestDB(unittest.TestCase):
         logger.setLevel(DEBUG)
         self.db = tempfile.NamedTemporaryFile(delete=False)
         self.db.close()
-        timestamps.database = self.db.name
-        timestamps.initialize_db()
+        db.database = self.db.name
+        db.initialize_db()
 
     def tearDown(self):
         os.remove(self.db.name)
 
-    def test_store_timestamp(self):
-        timestamps.store_timestamp("a.gif", "timestamp1")
-        result = timestamps.get_timestamp("a.gif")
+    def test_set_timestamp(self):
+        with mock.patch("filechooser.db.time", return_value=1.0):
+            db.set_timestamp("a.gif")
+        result = db.get_timestamp("a.gif")
         self.assertEqual(len(result), 1)
         self.assertEqual(result[0]['filename'], "a.gif")
+        self.assertEqual(result[0]['timestamp'], 1.0)
 
     def test_update_timestamp(self):
-        timestamps.store_timestamp("b.gif", "timestamp1")
-        timestamps.store_timestamp("b.gif", "timestamp2")
-        result = timestamps.get_timestamp("b.gif")
+        with mock.patch("filechooser.db.time", return_value=1.0):
+            db.set_timestamp("b.gif")
+        with mock.patch("filechooser.db.time", return_value=2.0):
+            db.set_timestamp("b.gif")
+        result = db.get_timestamp("b.gif")
         self.assertEqual(len(result), 1)
-        self.assertEqual(result[0]['timestamp'], "timestamp2")
+        self.assertEqual(result[0]['timestamp'], 2.0)
