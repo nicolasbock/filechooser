@@ -47,4 +47,9 @@ insensitive.""",
         action="store_true",
         default=False)
 
-    return parser.parse_args()
+    options = parser.parse_args()
+
+    if options.N is not None and options.N < 1:
+        raise Exception("Argument -N can not be less than 1")
+
+    return options

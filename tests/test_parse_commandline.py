@@ -30,3 +30,15 @@ class TestParseCommandline(unittest.TestCase):
                                ["/scriptpath", "-N", "10", "/images"]):
             options = parse_commandline.parse_commandline()
         self.assertEqual(options.N, 10)
+
+    def test_illegal_N(self):
+        with mock.patch.object(sys, "argv",
+                               ["/scriptpath", "-N", "a", "/images"]):
+            with self.assertRaises(SystemExit):
+                parse_commandline.parse_commandline()
+
+    def test_negative_N(self):
+        with mock.patch.object(sys, "argv",
+                               ["/scriptpath", "-N", "-10", "/images"]):
+            with self.assertRaisesRegexp(Exception, "can not be less than"):
+                parse_commandline.parse_commandline()
