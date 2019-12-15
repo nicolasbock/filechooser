@@ -26,6 +26,9 @@ def get_image_files(paths):
 
     """
 
+    logger.debug("Getting image files from {}".format(paths))
+    if not isinstance(paths, list):
+        raise Exception("Expected a list of paths")
     result = []  # type: List[str]
     for path in paths:
         logger.debug("Testing path {}".format(path))
