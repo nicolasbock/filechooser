@@ -24,3 +24,9 @@ class TestParseCommandline(unittest.TestCase):
         self.assertTrue(isinstance(options.DIR, list))
         self.assertTrue(len(options.DIR) == 2)
         self.assertEqual(options.DIR, testdirs)
+
+    def test_N(self):
+        with mock.patch.object(sys, "argv",
+                               ["/scriptpath", "-N", "10", "/images"]):
+            options = parse_commandline.parse_commandline()
+        self.assertEqual(options.N, 10)
