@@ -7,7 +7,7 @@
 
 .. image:: https://github.com/nicolasbock/filechooser/actions/workflows/python-package.yml/badge.svg
    :target: https://github.com/nicolasbock/filechooser/actions/workflows/python-package.yml
-   :alg: Build and test
+   :alt: Build and test
 
 Introduction
 ------------
