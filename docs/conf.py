@@ -16,17 +16,18 @@
 # import sys
 # sys.path.insert(0, os.path.abspath('.'))
 
+from filechooser import __version__
 
 # -- Project information -----------------------------------------------------
 
 project = 'filechooser'
-copyright = '2019, Guido Bender and Nicolas Bock'
+copyright = '2019-2021, Guido Bender and Nicolas Bock'
 author = 'Guido Bender and Nicolas Bock'
 
 # The short X.Y version
 version = ''
 # The full version, including alpha/beta/rc tags
-release = 'v0.1.2'
+release = __version__
 
 
 # -- General configuration ---------------------------------------------------

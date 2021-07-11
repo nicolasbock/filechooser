@@ -5,12 +5,24 @@
 .. image:: https://badge.fury.io/py/filechooser.svg
    :target: https://badge.fury.io/py/filechooser
 
+Introduction
+------------
+
 A script that copies a random selection of files from a set of folders
 to a single destination folder.
 
-Documentation
-=============
+Installation
+------------
 
-You can find a more detailed documentation of this project at
+The easiest way to install this script is to run
 
-https://filechooser.readthedocs.io/
+.. code::
+
+   pip install filechooser
+
+Usage Example
+-------------
+
+.. code::
+
+   pick-files -N 20 --destination new_folder --suffix .jpg .avi .h -- folder1 folder2
