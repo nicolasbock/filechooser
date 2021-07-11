@@ -14,9 +14,6 @@ Introduction
    :target: https://filechooser.readthedocs.io/en/latest/?badge=latest
    :alt: Documentation Status
 
-.. image:: https://circleci.com/gh/nicolasbock/filechooser.svg?style=svg
-    :target: https://circleci.com/gh/nicolasbock/filechooser
-
 .. image:: https://badge.fury.io/py/filechooser.svg
     :target: https://badge.fury.io/py/filechooser
 
