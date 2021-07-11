@@ -16,6 +16,7 @@
 # import sys
 # sys.path.insert(0, os.path.abspath('.'))
 
+from filechooser import __version__
 
 # -- Project information -----------------------------------------------------
 
@@ -26,7 +27,7 @@ author = 'Guido Bender and Nicolas Bock'
 # The short X.Y version
 version = ''
 # The full version, including alpha/beta/rc tags
-release = 'v0.1.2'
+release = __version__
 
 
 # -- General configuration ---------------------------------------------------
