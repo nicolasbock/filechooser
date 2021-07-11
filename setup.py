@@ -35,7 +35,7 @@ setuptools.setup(
     license="BSD",
     url="https://github.com/nicolasbock/filechooser.git",
     project_urls={
-        "Documentation": "https://setuptools.readthedocs.io/"
+        "Documentation": "https://filechooser.readthedocs.io/"
     },
     scripts=["scripts/autorotate.sh"],
     entry_points={
