@@ -9,7 +9,7 @@ except Exception:
 from filechooser.logger import logger
 
 database = "file-timestamps-db.json"
-db = None  # type: TinyDB
+db = None
 query = None  # type: Query
 
 
