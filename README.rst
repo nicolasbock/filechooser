@@ -29,4 +29,4 @@ Usage Example
 
 .. code::
 
-   pick-files -N 20 --destination new_folder --suffix .jpg .avi .h -- folder1 folder2
+   pick-files --number 20 --destination new_folder --suffix .jpg .avi .h -- folder1 folder2
