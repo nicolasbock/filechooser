@@ -94,6 +94,9 @@ func main() {
 	allFiles := readFiles(folders)
 	files := []File{}
 	for i := 0; i < n; i++ {
+		if len(allFiles) == 0 {
+			break
+		}
 		j := rand.Intn(len(allFiles))
 		files = append(files, allFiles[j])
 		allFiles[j] = allFiles[len(allFiles)-1]
