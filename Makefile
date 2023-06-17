@@ -1,12 +1,12 @@
-.PHONY: build dist upload clean
+.PHONY: build dist upload
 
 build:
 	rm -rf build
-	./setup.py build
+	/usr/bin/env python3 ./setup.py build
 
 dist:
 	rm -rf dist
-	./setup.py bdist_wheel --universal
+	/usr/bin/env python3 ./setup.py bdist_wheel --universal
 
 upload: dist
 	twine upload dist/*
