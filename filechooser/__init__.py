@@ -1,11 +1,10 @@
-import os.path
 import subprocess
 
 
 def _get_latest_tag():
     version = "unknown"
     try:
-        with open('.version') as fd:
+        with open('.version', encoding='utf8') as fd:
             version = fd.readline()
         return version
     except FileNotFoundError:
@@ -20,7 +19,7 @@ def _get_latest_tag():
         version = raw_version[0]
         if len(raw_version) > 1:
             version += ".dev" + raw_version[1]
-    with open('.version', 'w') as fd:
+    with open('.version', mode='w', encoding='utf-8') as fd:
         fd.write('{}\n'.format(version))
     return version
 

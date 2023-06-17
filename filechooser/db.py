@@ -52,4 +52,4 @@ def dump_db():
     """Gets all records currently stored in the database.
     """
     global db
-    return(db.all())
+    return db.all()
