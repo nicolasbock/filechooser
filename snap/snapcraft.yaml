@@ -1,0 +1,26 @@
+name: pick-files
+base: core22
+adopt-info: pick-files
+summary: Single-line elevator pitch for your amazing snap # 79 char long summary
+description: |
+  This is my-snap's description. You have a paragraph or two to tell the
+  most important story about your snap. Keep it under 100 words though,
+  we live in tweetspace and your description wants to look good in the snap
+  store.
+
+grade: stable
+confinement: strict
+
+apps:
+  pick-files:
+    command: bin/pick-files
+
+parts:
+  pick-files:
+    plugin: python
+    source: .
+    python-requirements:
+      - requirements.txt
+    override-build: |
+      craftctl default
+      craftctl set version=$(cat .version)

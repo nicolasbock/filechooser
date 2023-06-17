@@ -1,10 +1,15 @@
+import os
 import subprocess
 
 
 def _get_latest_tag():
     version = "unknown"
+    version_file = ""
+    if os.environ.get('SNAP_NAME', '') == 'pick-files':
+        version_file = os.path.join(os.environ.get('SNAP', ''), 'filechooser')
+    version_file = os.path.join(version_file, '.version')
     try:
-        with open('.version', encoding='utf8') as fd:
+        with open(version_file, encoding='utf8') as fd:
             version = fd.readline()
         return version
     except FileNotFoundError:
