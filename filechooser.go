@@ -29,7 +29,7 @@ type File struct {
 }
 
 func (f File) String() string {
-	return fmt.Sprintf("%s (%s)", f.path, f.md5sum)
+	return fmt.Sprintf("%s (%s %s)", f.name, f.path, f.md5sum)
 }
 
 var (
