@@ -12,6 +12,12 @@
 A script that copies a random selection of files from a set of folders
 to a single destination folder.
 
+# Usage Example
+
+```console
+pick-files --number 20 --destination new_folder --suffix .jpg .avi -- folder1 folder2
+```
+
 # Installation
 
 There are several options to install this script
@@ -26,10 +32,4 @@ snap install pick-files
 
 ```console
 make
-```
-
-# Usage Example
-
-```console
-pick-files --number 20 --destination new_folder --suffix .jpg .avi -- folder1 folder2
 ```
