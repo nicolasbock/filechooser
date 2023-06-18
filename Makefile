@@ -1,5 +1,5 @@
-filechooser: filechooser.go
-	go build -o pick-files
+pick-files: pick-files.go
+	go build
 
 .PHONY: test
 test:
