@@ -32,15 +32,15 @@ There are several options to install this script
 
    snap install pick-files
 
-or
+or alternatively to build the binary:
 
 .. code::
 
-   pip install filechooser
+   make
 
 Usage Example
 -------------
 
 .. code::
 
-   pick-files --number 20 --destination new_folder --suffix .jpg .avi .h -- folder1 folder2
+   pick-files --number 20 --destination new_folder --suffix .jpg .avi -- folder1 folder2
