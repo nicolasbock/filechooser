@@ -1,6 +1,6 @@
 name: pick-files
 base: core22
-adopt-info: pick-files
+adopt-info: pick-files-go
 
 summary: A script that picks a random selection of files
 description: |
@@ -13,11 +13,11 @@ confinement: strict
 apps:
   pick-files:
     command: usr/bin/pick-files
-  pick-files-legacy:
-    command: usr/bin/pick-files-legacy
+  pick-files-go:
+    command: usr/bin/pick-files-go
 
 parts:
-  pick-files:
+  pick-files-go:
     plugin: dump
     source: .
     build-snaps:
@@ -27,7 +27,7 @@ parts:
       VERSION=$(git describe --tags)
       craftctl set version=${VERSION}
       go build -ldflags "-X main.Version=${VERSION}" -o pick-files ./...
-      install --mode 0755 -D pick-files ${CRAFT_PART_INSTALL}/usr/bin/pick-files
+      install --mode 0755 -D pick-files ${CRAFT_PART_INSTALL}/usr/bin/pick-files-go
 
   pick-files-python:
     plugin: python
@@ -35,4 +35,4 @@ parts:
     python-requirements:
       - requirements.txt
     organize:
-      bin/pick-files: usr/bin/pick-files-legacy
+      bin/pick-files: usr/bin/pick-files
