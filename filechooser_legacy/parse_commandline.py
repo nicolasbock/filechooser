@@ -1,4 +1,5 @@
 import argparse
+from filechooser_legacy import __version__
 
 
 def parse_commandline():
@@ -8,6 +9,13 @@ def parse_commandline():
 randomly picks a chosen numer of files from a set of folders and
 copies those files to a single destination folder. The files to be
 considered can be filtered by suffix.""")
+
+    parser.add_argument(
+        "--version",
+        help="The program version",
+        action="version",
+        version=__version__,
+    )
 
     parser.add_argument(
         "DIR",

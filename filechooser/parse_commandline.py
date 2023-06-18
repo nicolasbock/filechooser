@@ -10,6 +10,13 @@ copies those files to a single destination folder. The files to be
 considered can be filtered by suffix.""")
 
     parser.add_argument(
+        "--version",
+        help="The program version",
+        action="version",
+        version='0.10',
+    )
+
+    parser.add_argument(
         "DIR",
         help="The directory to consider (scanned recursively)",
         nargs="+")

@@ -6,7 +6,7 @@ import shutil
 import stat
 import sys
 import tempfile
-import filechooser.parse_commandline as parse_commandline
+import filechooser_legacy.parse_commandline as parse_commandline
 
 
 def main():

@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 
 import setuptools
-from filechooser import __version__
+from filechooser_legacy import __version__
 
 
 setuptools.setup(
     name="filechooser",
     version=__version__,
-    data_files=['.version'],
+    data_files=[('filechooser', ['.version'])],
     license="BSD",
     url="https://github.com/nicolasbock/filechooser.git",
     project_urls={
