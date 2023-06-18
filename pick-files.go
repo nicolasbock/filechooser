@@ -35,12 +35,14 @@ func (f File) String() string {
 }
 
 var (
-	n       int
-	folders Folders
-	output  string
+	n            int
+	folders      Folders
+	output       string
+	printVersion bool
 )
 
 func parseCommandline() {
+	flag.BoolVar(&printVersion, "version", false, "Print the version of this program")
 	flag.IntVar(&n, "N", 1, "The number of files to choose")
 	flag.Var(&folders, "folder", "A folder PATH to consider when picking "+
 		"files; can be used multiple times")
@@ -85,11 +87,14 @@ func readFiles(folders []string) []File {
 
 func main() {
 	parseCommandline()
+	if printVersion {
+		fmt.Printf("Version: %s\n", Version)
+		os.Exit(0)
+	}
 	if len(folders) == 0 {
 		folders = append(folders, ".")
 	}
 
-	fmt.Printf("Version %s\n", Version)
 	fmt.Printf("Will pick %d file(s) randomly\n", n)
 	fmt.Printf("From the following folders: %s\n", &folders)
 	fmt.Printf("The selected files will go into the '%s' folder\n", output)
