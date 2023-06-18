@@ -16,11 +16,13 @@ to a single destination folder.
 
 There are several options to install this script
 
+## Get the snap
+
 ```console
 snap install pick-files
 ```
 
-or alternatively to build the binary:
+## Build it from source
 
 ```console
 make
