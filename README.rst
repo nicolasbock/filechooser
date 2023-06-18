@@ -26,7 +26,13 @@ to a single destination folder.
 Installation
 ------------
 
-The easiest way to install this script is to run
+There are several options to install this script
+
+.. code::
+
+   snap install pick-files
+
+or
 
 .. code::
 
