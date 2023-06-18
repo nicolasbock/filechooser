@@ -5,8 +5,16 @@
 .. image:: https://badge.fury.io/py/filechooser.svg
    :target: https://badge.fury.io/py/filechooser
 
-.. image:: https://github.com/nicolasbock/filechooser/actions/workflows/python-package.yml/badge.svg
-   :target: https://github.com/nicolasbock/filechooser/actions/workflows/python-package.yml
+.. image:: https://github.com/nicolasbock/filechooser/actions/workflows/python-package.yaml/badge.svg
+   :target: https://github.com/nicolasbock/filechooser/actions/workflows/python-package.yaml
+   :alt: Build and test
+
+.. image:: https://github.com/nicolasbock/filechooser/actions/workflows/go-package.yaml/badge.svg
+   :target: https://github.com/nicolasbock/filechooser/actions/workflows/go-package.yaml
+   :alt: Build and test
+
+.. image:: https://github.com/nicolasbock/filechooser/actions/workflows/snap-package.yaml/badge.svg
+   :target: https://github.com/nicolasbock/filechooser/actions/workflows/snap-package.yaml
    :alt: Build and test
 
 Introduction
