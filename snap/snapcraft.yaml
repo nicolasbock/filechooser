@@ -13,14 +13,17 @@ confinement: strict
 
 apps:
   pick-files:
-    command: bin/pick-files
+    command: usr/bin/pick-files
 
 parts:
   pick-files:
-    plugin: python
+    plugin: dump
     source: .
-    python-requirements:
-      - requirements.txt
+    build-snaps:
+      - go
     override-build: |
-      craftctl default
-      craftctl set version=$(cat .version)
+      set -e -u -x
+      VERSION=$(git describe --tags)
+      craftctl set version=${VERSION}
+      go build -ldflags "-X main.Version=${VERSION}" -o pick-files ./...
+      install --mode 0755 -D pick-files ${CRAFT_PART_INSTALL}/usr/bin/pick-files
