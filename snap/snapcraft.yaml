@@ -13,6 +13,8 @@ confinement: strict
 apps:
   pick-files:
     command: usr/bin/pick-files
+  pick-files-legacy:
+    command: usr/bin/pick-files-legacy
 
 parts:
   pick-files:
@@ -26,3 +28,11 @@ parts:
       craftctl set version=${VERSION}
       go build -ldflags "-X main.Version=${VERSION}" -o pick-files ./...
       install --mode 0755 -D pick-files ${CRAFT_PART_INSTALL}/usr/bin/pick-files
+
+  pick-files-python:
+    plugin: python
+    source: .
+    python-requirements:
+      - requirements.txt
+    organize:
+      bin/pick-files: usr/bin/pick-files-legacy
