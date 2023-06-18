@@ -25,7 +25,8 @@ jobs:
         with:
           snapcraft-args: --verbosity=debug
 
-      - run: |
+      - name: Install and run snap
+        run: |
           sudo snap install --dangerous ${{ steps.snapcraft.outputs.snap }}
           pick-files --help
 
