@@ -11,6 +11,8 @@ import (
 	"strings"
 )
 
+var Version = "unknown"
+
 type Folders []string
 
 func (f *Folders) Set(s string) error {
@@ -87,6 +89,7 @@ func main() {
 		folders = append(folders, ".")
 	}
 
+	fmt.Printf("Version %s\n", Version)
 	fmt.Printf("Will pick %d file(s) randomly\n", n)
 	fmt.Printf("From the following folders: %s\n", &folders)
 	fmt.Printf("The selected files will go into the '%s' folder\n", output)
