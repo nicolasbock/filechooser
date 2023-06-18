@@ -1,3 +1,3 @@
-module github.com/nicolasbock/filechooser
+module github.com/nicolasbock/pick-files
 
 go 1.20
