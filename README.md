@@ -1,12 +1,9 @@
 [![Documentation Status](https://readthedocs.org/projects/filechooser/badge/?version=latest)](https://filechooser.readthedocs.io/en/latest/?badge=latest)
+[![Build and test](https://github.com/nicolasbock/filechooser/actions/workflows/python-package.yaml/badge.svg)](https://github.com/nicolasbock/filechooser/actions/workflows/python-package.yaml)
+[![Build and test](https://github.com/nicolasbock/filechooser/actions/workflows/go-package.yaml/badge.svg)](https://github.com/nicolasbock/filechooser/actions/workflows/go-package.yaml)
+[![Build and test](https://github.com/nicolasbock/filechooser/actions/workflows/snap-package.yaml/badge.svg)](https://github.com/nicolasbock/filechooser/actions/workflows/snap-package.yaml)
 
 [![Python](https://badge.fury.io/py/filechooser.svg)](https://badge.fury.io/py/filechooser)
-
-[![Build and test](https://github.com/nicolasbock/filechooser/actions/workflows/python-package.yaml/badge.svg)](https://github.com/nicolasbock/filechooser/actions/workflows/python-package.yaml)
-
-[![Build and test](https://github.com/nicolasbock/filechooser/actions/workflows/go-package.yaml/badge.svg)](https://github.com/nicolasbock/filechooser/actions/workflows/go-package.yaml)
-
-[![Build and test](https://github.com/nicolasbock/filechooser/actions/workflows/snap-package.yaml/badge.svg)](https://github.com/nicolasbock/filechooser/actions/workflows/snap-package.yaml)
 
 [![Get it from the Snap Store](https://snapcraft.io/static/images/badges/en/snap-store-black.svg)](https://snapcraft.io/pick-files)
 
