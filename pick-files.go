@@ -3,12 +3,13 @@ package main
 import (
 	"crypto/md5"
 	"encoding/hex"
-	"flag"
 	"fmt"
 	"io"
 	"math/rand"
 	"os"
 	"strings"
+
+	"github.com/juju/gnuflag"
 )
 
 var Version = "unknown"
@@ -35,20 +36,33 @@ func (f File) String() string {
 }
 
 var (
-	n            int
-	folders      Folders
-	output       string
-	printVersion bool
+	deleteExisting bool
+	folders        Folders
+	helpRequested  bool
+	n              int
+	output         string
+	printVersion   bool
+	suffix         string
 )
 
+// parseCommandline parses the command line arguments and stores the option
+// values.
 func parseCommandline() {
-	flag.BoolVar(&printVersion, "version", false, "Print the version of this program")
-	flag.IntVar(&n, "N", 1, "The number of files to choose")
-	flag.Var(&folders, "folder", "A folder PATH to consider when picking "+
-		"files; can be used multiple times")
-	flag.StringVar(&output, "output", "output", "The output PATH for the "+
-		"selected files")
-	flag.Parse()
+	gnuflag.BoolVar(&deleteExisting, "delete-existing", false, "Delete existing files in the "+
+		"destionation folder instead of moving those files to a new location.")
+	gnuflag.Var(&folders, "folder", "A folder PATH to consider when picking "+
+		"files; can be used multiple times.")
+	gnuflag.IntVar(&n, "number", 1, "The number of files to choose.")
+	gnuflag.IntVar(&n, "N", 1, "The number of files to choose.")
+	gnuflag.StringVar(&output, "destination", "output", "The output PATH for the "+
+		"selected files.")
+	gnuflag.BoolVar(&printVersion, "version", false, "Print the version of this program.")
+	gnuflag.StringVar(&suffix, "suffix", "", "Only consider files with this SUFFIX. For instance, to only load "+
+		"jpeg files you would specify either 'jpg' or '.jpg'. By default, all files are be considered."+
+		"The suffix is case insensitive.")
+	gnuflag.BoolVar(&helpRequested, "h", false, "This help message.")
+	gnuflag.BoolVar(&helpRequested, "help", false, "This help message.")
+	gnuflag.Parse(true)
 }
 
 func readFiles(folders []string) []File {
@@ -87,6 +101,10 @@ func readFiles(folders []string) []File {
 
 func main() {
 	parseCommandline()
+	if helpRequested {
+		gnuflag.Usage()
+		os.Exit(0)
+	}
 	if printVersion {
 		fmt.Printf("Version: %s\n", Version)
 		os.Exit(0)
