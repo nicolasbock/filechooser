@@ -65,6 +65,8 @@ func parseCommandline() {
 	gnuflag.Parse(true)
 }
 
+// readFiles recursively reads all files in a list of folders and returns a list
+// of files.
 func readFiles(folders []string) []File {
 	var files = []File{}
 	for _, folder := range folders {
@@ -99,6 +101,39 @@ func readFiles(folders []string) []File {
 	return files
 }
 
+// copyFile copies the files `src` to file `dst` and returns the number of bytes
+// copied and potentially an error.
+func copyFile(src, dst string) (int64, error) {
+	_, err := os.Stat(dst)
+	if err == nil {
+		fmt.Printf("destination file %s already exists\n", dst)
+		return 0, nil
+	}
+
+	sourceFileStat, err := os.Stat(src)
+	if err != nil {
+		return 0, err
+	}
+
+	if !sourceFileStat.Mode().IsRegular() {
+		return 0, fmt.Errorf("%s is not a regular file", src)
+	}
+
+	source, err := os.Open(src)
+	if err != nil {
+		return 0, err
+	}
+	defer source.Close()
+
+	destination, err := os.Create(dst)
+	if err != nil {
+		return 0, err
+	}
+	defer destination.Close()
+	nBytes, err := io.Copy(destination, source)
+	return nBytes, err
+}
+
 func main() {
 	parseCommandline()
 	if helpRequested {
@@ -131,5 +166,9 @@ func main() {
 	fmt.Println("Picked:")
 	for _, file := range files {
 		fmt.Println(file)
+		_, err := copyFile(file.path, output+"/"+file.name)
+		if err != nil {
+			fmt.Printf("error copying %s to %s\n", file.path, output)
+		}
 	}
 }
