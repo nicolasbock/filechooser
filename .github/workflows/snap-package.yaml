@@ -27,6 +27,7 @@ jobs:
 
       - name: Install and run snap
         run: |
+          set -e -u -x
           sudo snap install --dangerous ${{ steps.snapcraft.outputs.snap }}
           pick-files --help
           pick-files.pick-files-go --help
