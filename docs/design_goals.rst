@@ -39,6 +39,8 @@ certain time interval.
 
 4. Other
 
-   - Reset option for the time stamp
-   - Call selection by a cron job
-   - Adding image folders needs to be possible
+    - Reset option for the time stamp
+    - Call selection by a cron job
+    - Adding image folders needs to be possible
+    - Remember past choices so that files will not reappear within a
+      configurable time window
