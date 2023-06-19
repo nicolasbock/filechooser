@@ -13,8 +13,14 @@ confinement: strict
 apps:
   pick-files:
     command: usr/bin/pick-files
+    plugs:
+      - home
+      - removable-media
   pick-files-go:
     command: usr/bin/pick-files-go
+    plugs:
+      - home
+      - removable-media
 
 parts:
   pick-files-go:
