@@ -192,7 +192,12 @@ func main() {
 		allFiles[j] = allFiles[len(allFiles)-1]
 		allFiles = allFiles[:len(allFiles)-1]
 	}
-	err := os.MkdirAll(output, os.ModePerm)
+	_, err := os.Stat(output)
+	if err == nil {
+	  fmt.Printf("destination folder already exists, aborting\n")
+	  os.Exit(1)
+	}
+	err = os.MkdirAll(output, os.ModePerm)
 	if err != nil {
 		fmt.Printf("error creating destination folder %s: %s\n", output, err.Error())
 	}
