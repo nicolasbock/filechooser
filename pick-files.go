@@ -63,16 +63,13 @@ func parseCommandline() {
 	gnuflag.Usage = func() {
 		fmt.Fprintf(os.Stderr, "Usage of %s:\n", path.Base(os.Args[0]))
 		fmt.Fprintf(os.Stderr, `
-pick-files is a script that copies a random selection of files from a set of folders
-to a single destination folder.
+pick-files is a script that copies a random selection of files from a set of folders to a single destination folder.
 
 # Usage Example
 
 pick-files --number 20 --destination new_folder --suffix .jpg .avi --folder folder1 --folder folder2
 
-Would choose at random 20 files from folder1 and folder2 (including sub-folders) and
-copy those files into new_folder. The new_folder is created if it does not exist
-already. In this example, only files with matching suffixes .jpg and .avi are considered.
+Would choose at random 20 files from folder1 and folder2 (including sub-folders) and copy those files into new_folder. The new_folder is created if it does not exist already. In this example, only files with matching suffixes .jpg and .avi are considered.
 
 `)
 		gnuflag.PrintDefaults()
