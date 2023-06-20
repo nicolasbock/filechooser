@@ -7,6 +7,7 @@ import (
 	"io"
 	"math/rand"
 	"os"
+	"path"
 	"strings"
 
 	"github.com/juju/gnuflag"
@@ -49,7 +50,7 @@ var (
 // values.
 func parseCommandline() {
 	gnuflag.Usage = func() {
-		fmt.Fprintf(os.Stderr, "Usage of %s:\n", os.Args[0])
+		fmt.Fprintf(os.Stderr, "Usage of %s:\n", path.Base(os.Args[0]))
 		fmt.Fprintf(os.Stderr, `
 pick-files is a script that copies a random selection of files from a set of folders
 to a single destination folder.
