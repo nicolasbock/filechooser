@@ -192,12 +192,15 @@ func main() {
 		allFiles[j] = allFiles[len(allFiles)-1]
 		allFiles = allFiles[:len(allFiles)-1]
 	}
-	fmt.Println("Picked:")
+	err := os.MkdirAll(output, os.ModePerm)
+	if err != nil {
+		fmt.Printf("error creating destination folder %s: %s\n", output, err.Error())
+	}
 	for _, file := range files {
 		fmt.Println(file)
 		_, err := copyFile(file.path, output+"/"+file.name)
 		if err != nil {
-			fmt.Printf("error copying %s to %s\n", file.path, output)
+			fmt.Printf("error copying %s to %s (%s)\n", file.path, output, err.Error())
 		}
 	}
 }
