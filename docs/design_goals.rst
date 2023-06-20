@@ -44,3 +44,13 @@ certain time interval.
     - Adding image folders needs to be possible
     - Remember past choices so that files will not reappear within a
       configurable time window
+
+      One should be able to choose how frequently a file is allowed to
+      re-appear. For instance, it should be possible to specify that all files
+      have to be chosen before a file becomes eligible again for choosing.
+
+      - Add database of files for metadata
+      - Choose only files that are eligible
+      - Add new files to database
+      - Remove deleted files from database
+      - Detect file renames? (maybe through inode)
