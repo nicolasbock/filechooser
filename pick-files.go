@@ -31,8 +31,19 @@ type File struct {
 	md5sum string
 }
 
+type Files []File
+
 func (f File) String() string {
-	return fmt.Sprintf("%s (%s %s)", f.name, f.path, f.md5sum)
+  return fmt.Sprintf("{name: \"%s\", path: \"%s\", md5sum: \"%s\"}", f.name, f.path, f.md5sum)
+}
+
+func (fs Files) String() string {
+  var intermediate []string = []string{}
+
+  for _, f := range fs {
+    intermediate = append(intermediate, f.String())
+  }
+  return strings.Join(intermediate, ", ")
 }
 
 var (
@@ -84,13 +95,13 @@ already. In this example, only files with matching suffixes .jpg and .avi are co
 
 // readFiles recursively reads all files in a list of folders and returns a list
 // of files.
-func readFiles(folders []string) []File {
-	var files = []File{}
+func readFiles(folders []string) Files {
+	var files = Files{}
 	for _, folder := range folders {
 		dirEntries, err := os.ReadDir(folder)
 		if err != nil {
 			fmt.Println(err)
-			return []File{}
+			return Files{}
 		}
 		for _, entry := range dirEntries {
 			if entry.IsDir() {
@@ -99,13 +110,13 @@ func readFiles(folders []string) []File {
 				file, err := os.Open(folder + "/" + entry.Name())
 				if err != nil {
 					fmt.Println(err)
-					return []File{}
+					return Files{}
 				}
 				hash := md5.New()
 				_, err = io.Copy(hash, file)
 				if err != nil {
 					fmt.Println(err)
-					return []File{}
+					return Files{}
 				}
 				files = append(files, File{
 					name:   entry.Name(),
@@ -170,7 +181,7 @@ func main() {
 	fmt.Printf("The selected files will go into the '%s' folder\n", output)
 
 	allFiles := readFiles(folders)
-	files := []File{}
+	files := Files{}
 	for i := 0; i < n; i++ {
 		if len(allFiles) == 0 {
 			break
