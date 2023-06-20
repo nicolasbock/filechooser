@@ -30,6 +30,10 @@ jobs:
       - name: Build
         run: |
           go build -ldflags "-X main.Version=$(git describe --tags)" -v -o pick-files ./...
+
+      - name: Simple test
+        run: |
+          set -e -u -x
           ./pick-files --version
           ./pick-files --number 3 --destination output --folder artifacts/a/a
 
