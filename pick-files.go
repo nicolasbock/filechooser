@@ -26,6 +26,7 @@ func (f *Folders) String() string {
 	return strings.Join(*f, ",")
 }
 
+// File represents a regular file in the source folders.
 type File struct {
 	name   string
 	path   string
@@ -35,19 +36,19 @@ type File struct {
 type Files []File
 
 func (f File) String() string {
-  return fmt.Sprintf("{name: \"%s\", path: \"%s\", md5sum: \"%s\"}", f.name, f.path, f.md5sum)
+	return fmt.Sprintf("{name: \"%s\", path: \"%s\", md5sum: \"%s\"}", f.name, f.path, f.md5sum)
 }
 
 func (fs Files) String() string {
-  var intermediate []string = []string{}
+	var intermediate []string = []string{}
 
-  for _, f := range fs {
-    intermediate = append(intermediate, f.String())
-  }
-  return strings.Join(intermediate, ", ")
+	for _, f := range fs {
+		intermediate = append(intermediate, f.String())
+	}
+	return strings.Join(intermediate, ", ")
 }
 
-var (
+type ProgramOptions struct {
 	deleteExisting bool
 	folders        Folders
 	helpRequested  bool
@@ -55,7 +56,9 @@ var (
 	output         string
 	printVersion   bool
 	suffix         string
-)
+}
+
+var options ProgramOptions = ProgramOptions{}
 
 // parseCommandline parses the command line arguments and stores the option
 // values.
@@ -74,20 +77,20 @@ Would choose at random 20 files from folder1 and folder2 (including sub-folders)
 `)
 		gnuflag.PrintDefaults()
 	}
-	gnuflag.BoolVar(&deleteExisting, "delete-existing", false, "Delete existing files in the "+
+	gnuflag.BoolVar(&options.deleteExisting, "delete-existing", false, "Delete existing files in the "+
 		"destionation folder instead of moving those files to a new location.")
-	gnuflag.Var(&folders, "folder", "A folder PATH to consider when picking "+
+	gnuflag.Var(&options.folders, "folder", "A folder PATH to consider when picking "+
 		"files; can be used multiple times.")
-	gnuflag.IntVar(&n, "number", 1, "The number of files to choose.")
-	gnuflag.IntVar(&n, "N", 1, "The number of files to choose.")
-	gnuflag.StringVar(&output, "destination", "output", "The output PATH for the "+
+	gnuflag.IntVar(&options.n, "number", 1, "The number of files to choose.")
+	gnuflag.IntVar(&options.n, "N", 1, "The number of files to choose.")
+	gnuflag.StringVar(&options.output, "destination", "output", "The output PATH for the "+
 		"selected files.")
-	gnuflag.BoolVar(&printVersion, "version", false, "Print the version of this program.")
-	gnuflag.StringVar(&suffix, "suffix", "", "Only consider files with this SUFFIX. For instance, to only load "+
+	gnuflag.BoolVar(&options.printVersion, "version", false, "Print the version of this program.")
+	gnuflag.StringVar(&options.suffix, "suffix", "", "Only consider files with this SUFFIX. For instance, to only load "+
 		"jpeg files you would specify either 'jpg' or '.jpg'. By default, all files are be considered."+
 		"The suffix is case insensitive.")
-	gnuflag.BoolVar(&helpRequested, "h", false, "This help message.")
-	gnuflag.BoolVar(&helpRequested, "help", false, "This help message.")
+	gnuflag.BoolVar(&options.helpRequested, "h", false, "This help message.")
+	gnuflag.BoolVar(&options.helpRequested, "help", false, "This help message.")
 	gnuflag.Parse(true)
 }
 
@@ -160,27 +163,11 @@ func copyFile(src, dst string) (int64, error) {
 	return nBytes, err
 }
 
-func main() {
-	parseCommandline()
-	if helpRequested {
-		gnuflag.Usage()
-		os.Exit(0)
-	}
-	if printVersion {
-		fmt.Printf("Version: %s\n", Version)
-		os.Exit(0)
-	}
-	if len(folders) == 0 {
-		folders = append(folders, ".")
-	}
-
-	fmt.Printf("Will pick %d file(s) randomly\n", n)
-	fmt.Printf("From the following folders: %s\n", &folders)
-	fmt.Printf("The selected files will go into the '%s' folder\n", output)
-
-	allFiles := readFiles(folders)
-	files := Files{}
-	for i := 0; i < n; i++ {
+// pickFiles randomly picks files and copies those to the destination folder.
+func pickFiles() {
+	var allFiles = readFiles(options.folders)
+	var files = Files{}
+	for i := 0; i < options.n; i++ {
 		if len(allFiles) == 0 {
 			break
 		}
@@ -189,20 +176,42 @@ func main() {
 		allFiles[j] = allFiles[len(allFiles)-1]
 		allFiles = allFiles[:len(allFiles)-1]
 	}
-	_, err := os.Stat(output)
+	_, err := os.Stat(options.output)
 	if err == nil {
-	  fmt.Printf("destination folder already exists, aborting\n")
-	  os.Exit(1)
+		fmt.Printf("destination folder already exists, aborting\n")
+		os.Exit(1)
 	}
-	err = os.MkdirAll(output, os.ModePerm)
+	err = os.MkdirAll(options.output, os.ModePerm)
 	if err != nil {
-		fmt.Printf("error creating destination folder %s: %s\n", output, err.Error())
+		fmt.Printf("error creating destination folder %s: %s\n", options.output, err.Error())
 	}
 	for _, file := range files {
 		fmt.Println(file)
-		_, err := copyFile(file.path, output+"/"+file.name)
+		_, err := copyFile(file.path, options.output+"/"+file.name)
 		if err != nil {
-			fmt.Printf("error copying %s to %s (%s)\n", file.path, output, err.Error())
+			fmt.Printf("error copying %s to %s (%s)\n", file.path, options.output, err.Error())
 		}
 	}
+}
+
+func main() {
+	parseCommandline()
+
+	if options.helpRequested {
+		gnuflag.Usage()
+		os.Exit(0)
+	}
+	if options.printVersion {
+		fmt.Printf("Version: %s\n", Version)
+		os.Exit(0)
+	}
+	if len(options.folders) == 0 {
+		options.folders = append(options.folders, ".")
+	}
+
+	fmt.Printf("Will pick %d file(s) randomly\n", options.n)
+	fmt.Printf("From the following folders: %s\n", &options.folders)
+	fmt.Printf("The selected files will go into the '%s' folder\n", options.output)
+
+	pickFiles()
 }
