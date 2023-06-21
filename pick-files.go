@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"io"
+	"log"
 	"math/rand"
 	"os"
 	"path"
@@ -79,7 +80,7 @@ Would choose at random 20 files from folder1 and folder2 (including sub-folders)
 		gnuflag.PrintDefaults()
 	}
 	gnuflag.BoolVar(&options.deleteExisting, "delete-existing", false, "Delete existing files in the "+
-		"destionation folder instead of moving those files to a new location.")
+		"destination folder instead of moving those files to a new location.")
 	gnuflag.BoolVar(&options.dryRun, "dry-run", false, "If set then the chosen files are only shown and not copied.")
 	gnuflag.Var(&options.folders, "folder", "A folder PATH to consider when picking "+
 		"files; can be used multiple times.")
@@ -103,7 +104,7 @@ func readFiles(folders []string) Files {
 	for _, folder := range folders {
 		dirEntries, err := os.ReadDir(folder)
 		if err != nil {
-			fmt.Println(err)
+			log.Println(err)
 			return Files{}
 		}
 		for _, entry := range dirEntries {
@@ -112,13 +113,13 @@ func readFiles(folders []string) Files {
 			} else {
 				file, err := os.Open(folder + "/" + entry.Name())
 				if err != nil {
-					fmt.Println(err)
+					log.Println(err)
 					return Files{}
 				}
 				hash := md5.New()
 				_, err = io.Copy(hash, file)
 				if err != nil {
-					fmt.Println(err)
+					log.Println(err)
 					return Files{}
 				}
 				files = append(files, File{
@@ -137,12 +138,13 @@ func readFiles(folders []string) Files {
 func copyFile(src, dst string) (int64, error) {
 	_, err := os.Stat(dst)
 	if err == nil {
-		fmt.Printf("destination file %s already exists\n", dst)
+		log.Printf("destination file %s already exists\n", dst)
 		return 0, nil
 	}
 
 	sourceFileStat, err := os.Stat(src)
 	if err != nil {
+		log.Printf("source file %s does not exist\n", src)
 		return 0, err
 	}
 
@@ -162,6 +164,7 @@ func copyFile(src, dst string) (int64, error) {
 	}
 	defer destination.Close()
 	nBytes, err := io.Copy(destination, source)
+	log.Printf("copied %s to %s\n", src, dst)
 	return nBytes, err
 }
 
@@ -180,24 +183,23 @@ func pickFiles() {
 	}
 
 	for _, file := range files {
-		fmt.Printf("Selected %s\n", file)
+		log.Printf("Selected %s\n", file)
 	}
 
 	if !options.dryRun {
 		_, err := os.Stat(options.output)
 		if err == nil {
-			fmt.Printf("destination folder already exists, aborting\n")
-			os.Exit(1)
+			log.Fatalln("destination folder already exists, aborting")
 		}
 		err = os.MkdirAll(options.output, os.ModePerm)
 		if err != nil {
-			fmt.Printf("error creating destination folder %s: %s\n", options.output, err.Error())
+			log.Fatalf("error creating destination folder %s: %s\n", options.output, err.Error())
 		}
 		for _, file := range files {
-			fmt.Printf("copying %s\n", file)
+			log.Printf("copying %s\n", file)
 			_, err := copyFile(file.path, options.output+"/"+file.name)
 			if err != nil {
-				fmt.Printf("error copying %s to %s (%s)\n", file.path, options.output, err.Error())
+				log.Fatalf("error copying %s to %s (%s)\n", file.path, options.output, err.Error())
 			}
 		}
 	}
@@ -218,9 +220,9 @@ func main() {
 		options.folders = append(options.folders, ".")
 	}
 
-	fmt.Printf("Will pick %d file(s) randomly\n", options.n)
-	fmt.Printf("From the following folders: %s\n", &options.folders)
-	fmt.Printf("The selected files will go into the '%s' folder\n", options.output)
+	log.Printf("Will pick %d file(s) randomly\n", options.n)
+	log.Printf("From the following folders: %s\n", &options.folders)
+	log.Printf("The selected files will go into the '%s' folder\n", options.output)
 
 	pickFiles()
 }
