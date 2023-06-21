@@ -50,6 +50,7 @@ func (fs Files) String() string {
 
 type ProgramOptions struct {
 	deleteExisting bool
+	dryRun         bool
 	folders        Folders
 	helpRequested  bool
 	n              int
@@ -79,6 +80,7 @@ Would choose at random 20 files from folder1 and folder2 (including sub-folders)
 	}
 	gnuflag.BoolVar(&options.deleteExisting, "delete-existing", false, "Delete existing files in the "+
 		"destionation folder instead of moving those files to a new location.")
+	gnuflag.BoolVar(&options.dryRun, "dry-run", false, "If set then the chosen files are only shown and not copied.")
 	gnuflag.Var(&options.folders, "folder", "A folder PATH to consider when picking "+
 		"files; can be used multiple times.")
 	gnuflag.IntVar(&options.n, "number", 1, "The number of files to choose.")
@@ -176,20 +178,27 @@ func pickFiles() {
 		allFiles[j] = allFiles[len(allFiles)-1]
 		allFiles = allFiles[:len(allFiles)-1]
 	}
-	_, err := os.Stat(options.output)
-	if err == nil {
-		fmt.Printf("destination folder already exists, aborting\n")
-		os.Exit(1)
-	}
-	err = os.MkdirAll(options.output, os.ModePerm)
-	if err != nil {
-		fmt.Printf("error creating destination folder %s: %s\n", options.output, err.Error())
-	}
+
 	for _, file := range files {
-		fmt.Println(file)
-		_, err := copyFile(file.path, options.output+"/"+file.name)
+		fmt.Printf("Selected %s\n", file)
+	}
+
+	if !options.dryRun {
+		_, err := os.Stat(options.output)
+		if err == nil {
+			fmt.Printf("destination folder already exists, aborting\n")
+			os.Exit(1)
+		}
+		err = os.MkdirAll(options.output, os.ModePerm)
 		if err != nil {
-			fmt.Printf("error copying %s to %s (%s)\n", file.path, options.output, err.Error())
+			fmt.Printf("error creating destination folder %s: %s\n", options.output, err.Error())
+		}
+		for _, file := range files {
+			fmt.Printf("copying %s\n", file)
+			_, err := copyFile(file.path, options.output+"/"+file.name)
+			if err != nil {
+				fmt.Printf("error copying %s to %s (%s)\n", file.path, options.output, err.Error())
+			}
 		}
 	}
 }
