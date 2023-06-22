@@ -21,7 +21,7 @@ from filechooser import __version__
 # -- Project information -----------------------------------------------------
 
 project = 'filechooser'
-copyright = '2019-2021, Guido Bender and Nicolas Bock'
+copyright = '2019-2023, Guido Bender and Nicolas Bock'
 author = 'Guido Bender and Nicolas Bock'
 
 # The short X.Y version
