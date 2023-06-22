@@ -35,7 +35,9 @@ jobs:
         run: |
           set -e -u -x
           ./pick-files --version
-          ./pick-files --number 3 --destination output --folder artifacts/a/a
+          ./pick-files --number 10 --destination output-1 --folder artifacts/a/a
+          ./pick-files --number 10 --destination output-2 --folder artifacts/a/a
+          ./pick-files --number 10 --destination output-3 --folder artifacts/a/a
 
       - name: Test
         run: go test -v ./...
