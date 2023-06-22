@@ -9,6 +9,7 @@ import (
 	"os"
 	"path"
 	"strings"
+	"time"
 
 	"github.com/juju/gnuflag"
 	"github.com/rs/zerolog"
@@ -30,9 +31,10 @@ func (f *Folders) String() string {
 
 // File represents a regular file in the source folders.
 type File struct {
-	name   string
-	path   string
-	md5sum string
+	name       string
+	path       string
+	md5sum     string
+	lastPicked time.Time
 }
 
 type Files []File
@@ -175,19 +177,26 @@ func copyFile(src, dst string) (int64, error) {
 // pickFiles randomly picks files and copies those to the destination folder.
 func pickFiles() {
 	var allFiles = readFiles(options.folders)
-	var files = Files{}
+	var pickedFileIndices = []int{}
+	var allFileIndices = make([]int, len(allFiles))
+
+	for i := 0; i < len(allFiles); i++ {
+		allFileIndices[i] = i
+	}
+
 	for i := 0; i < options.n; i++ {
 		if len(allFiles) == 0 {
 			break
 		}
-		j := rand.Intn(len(allFiles))
-		files = append(files, allFiles[j])
-		allFiles[j] = allFiles[len(allFiles)-1]
-		allFiles = allFiles[:len(allFiles)-1]
+		j := rand.Intn(len(allFileIndices))
+		pickedFileIndices = append(pickedFileIndices, allFileIndices[j])
+		allFileIndices[j] = allFileIndices[len(allFileIndices)-1]
+		allFileIndices = allFileIndices[:len(allFileIndices)-1]
 	}
 
-	for _, file := range files {
-		log.Info().Msgf("Selected %s", file)
+	for _, file := range pickedFileIndices {
+		allFiles[file].lastPicked = time.Now()
+		log.Info().Msgf("Selected %s", allFiles[file])
 	}
 
 	if !options.dryRun {
@@ -199,11 +208,11 @@ func pickFiles() {
 		if err != nil {
 			log.Fatal().Msgf("error creating destination folder %s: %s", options.output, err.Error())
 		}
-		for _, file := range files {
-			log.Info().Msgf("copying %s", file)
-			_, err := copyFile(file.path, options.output+"/"+file.name)
+		for _, file := range pickedFileIndices {
+			log.Info().Msgf("copying %s", allFiles[file])
+			_, err := copyFile(allFiles[file].path, options.output+"/"+allFiles[file].name)
 			if err != nil {
-				log.Fatal().Msgf("error copying %s to %s (%s)", file.path, options.output, err.Error())
+				log.Fatal().Msgf("error copying %s to %s (%s)", allFiles[file].path, options.output, err.Error())
 			}
 		}
 	}
