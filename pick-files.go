@@ -5,13 +5,14 @@ import (
 	"encoding/hex"
 	"fmt"
 	"io"
-	"log"
 	"math/rand"
 	"os"
 	"path"
 	"strings"
 
 	"github.com/juju/gnuflag"
+	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 )
 
 var Version = "unknown"
@@ -50,6 +51,7 @@ func (fs Files) String() string {
 }
 
 type ProgramOptions struct {
+	debugRequested bool
 	deleteExisting bool
 	dryRun         bool
 	folders        Folders
@@ -62,12 +64,10 @@ type ProgramOptions struct {
 
 var options ProgramOptions = ProgramOptions{}
 
-// parseCommandline parses the command line arguments and stores the option
-// values.
-func parseCommandline() {
-	gnuflag.Usage = func() {
-		fmt.Fprintf(os.Stderr, "Usage of %s:\n", path.Base(os.Args[0]))
-		fmt.Fprintf(os.Stderr, `
+// printUsage prints program usage.
+func printUsage() {
+	fmt.Fprintf(os.Stderr, "Usage of %s:\n", path.Base(os.Args[0]))
+	fmt.Fprintf(os.Stderr, `
 pick-files is a script that copies a random selection of files from a set of folders to a single destination folder.
 
 # Usage Example
@@ -77,8 +77,14 @@ pick-files --number 20 --destination new_folder --suffix .jpg .avi --folder fold
 Would choose at random 20 files from folder1 and folder2 (including sub-folders) and copy those files into new_folder. The new_folder is created if it does not exist already. In this example, only files with matching suffixes .jpg and .avi are considered.
 
 `)
-		gnuflag.PrintDefaults()
-	}
+	gnuflag.PrintDefaults()
+}
+
+// parseCommandline parses the command line arguments and stores the option
+// values.
+func parseCommandline() {
+	gnuflag.Usage = printUsage
+	gnuflag.BoolVar(&options.debugRequested, "debug", false, "Debug output.")
 	gnuflag.BoolVar(&options.deleteExisting, "delete-existing", false, "Delete existing files in the "+
 		"destination folder instead of moving those files to a new location.")
 	gnuflag.BoolVar(&options.dryRun, "dry-run", false, "If set then the chosen files are only shown and not copied.")
@@ -104,7 +110,7 @@ func readFiles(folders []string) Files {
 	for _, folder := range folders {
 		dirEntries, err := os.ReadDir(folder)
 		if err != nil {
-			log.Println(err)
+			log.Fatal().Msg(err.Error())
 			return Files{}
 		}
 		for _, entry := range dirEntries {
@@ -113,13 +119,13 @@ func readFiles(folders []string) Files {
 			} else {
 				file, err := os.Open(folder + "/" + entry.Name())
 				if err != nil {
-					log.Println(err)
+					log.Warn().Msg(err.Error())
 					return Files{}
 				}
 				hash := md5.New()
 				_, err = io.Copy(hash, file)
 				if err != nil {
-					log.Println(err)
+					log.Warn().Msg(err.Error())
 					return Files{}
 				}
 				files = append(files, File{
@@ -138,18 +144,16 @@ func readFiles(folders []string) Files {
 func copyFile(src, dst string) (int64, error) {
 	_, err := os.Stat(dst)
 	if err == nil {
-		log.Printf("destination file %s already exists\n", dst)
-		return 0, nil
+		log.Fatal().Msgf("destination file %s already exists", dst)
 	}
 
 	sourceFileStat, err := os.Stat(src)
 	if err != nil {
-		log.Printf("source file %s does not exist\n", src)
-		return 0, err
+		log.Fatal().Msgf("source file %s does not exist", src)
 	}
 
 	if !sourceFileStat.Mode().IsRegular() {
-		return 0, fmt.Errorf("%s is not a regular file", src)
+		log.Fatal().Msgf("%s is not a regular file", src)
 	}
 
 	source, err := os.Open(src)
@@ -164,7 +168,7 @@ func copyFile(src, dst string) (int64, error) {
 	}
 	defer destination.Close()
 	nBytes, err := io.Copy(destination, source)
-	log.Printf("copied %s to %s\n", src, dst)
+	log.Debug().Msgf("copied %s to %s", src, dst)
 	return nBytes, err
 }
 
@@ -183,23 +187,23 @@ func pickFiles() {
 	}
 
 	for _, file := range files {
-		log.Printf("Selected %s\n", file)
+		log.Info().Msgf("Selected %s", file)
 	}
 
 	if !options.dryRun {
 		_, err := os.Stat(options.output)
 		if err == nil {
-			log.Fatalln("destination folder already exists, aborting")
+			log.Fatal().Msg("destination folder already exists, aborting")
 		}
 		err = os.MkdirAll(options.output, os.ModePerm)
 		if err != nil {
-			log.Fatalf("error creating destination folder %s: %s\n", options.output, err.Error())
+			log.Fatal().Msgf("error creating destination folder %s: %s", options.output, err.Error())
 		}
 		for _, file := range files {
-			log.Printf("copying %s\n", file)
+			log.Info().Msgf("copying %s", file)
 			_, err := copyFile(file.path, options.output+"/"+file.name)
 			if err != nil {
-				log.Fatalf("error copying %s to %s (%s)\n", file.path, options.output, err.Error())
+				log.Fatal().Msgf("error copying %s to %s (%s)", file.path, options.output, err.Error())
 			}
 		}
 	}
@@ -220,9 +224,16 @@ func main() {
 		options.folders = append(options.folders, ".")
 	}
 
-	log.Printf("Will pick %d file(s) randomly\n", options.n)
-	log.Printf("From the following folders: %s\n", &options.folders)
-	log.Printf("The selected files will go into the '%s' folder\n", options.output)
+	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
+	zerolog.SetGlobalLevel(zerolog.InfoLevel)
+	if options.debugRequested {
+		zerolog.SetGlobalLevel(zerolog.DebugLevel)
+	}
+	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
+
+	log.Info().Msgf("Will pick %d file(s) randomly", options.n)
+	log.Info().Msgf("Source folders: %s", &options.folders)
+	log.Info().Msgf("The selected files will go into the '%s' folder", options.output)
 
 	pickFiles()
 }
