@@ -30,7 +30,7 @@ jobs:
           set -e -u -x
           sudo snap install --dangerous ${{ steps.snapcraft.outputs.snap }}
           pick-files --help
-          pick-files.pick-files-go --help
+          pick-files.pick-files-legacy --help
 
       - uses: actions/upload-artifact@v3
         with:
