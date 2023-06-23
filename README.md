@@ -16,7 +16,7 @@ to a single destination folder.
 # Usage Example
 
 ```console
-pick-files --number 20 --destination new_folder --suffix .jpg .avi -- folder1 folder2
+pick-files --number 20 --destination new_folder --suffix .jpg --suffix .avi --folder folder1 --folder folder2
 ```
 
 # Installation
@@ -34,3 +34,5 @@ snap install pick-files
 ```console
 make
 ```
+
+Which requires `>= go-1.17` and `make`.
