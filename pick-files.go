@@ -110,8 +110,7 @@ func parseCommandline() {
 		"selected files.")
 	gnuflag.BoolVar(&options.printVersion, "version", false, "Print the version of this program.")
 	gnuflag.Var(&options.suffixes, "suffix", "Only consider files with this SUFFIX. For instance, to only load "+
-		"jpeg files you would specify either 'jpg' or '.jpg'. By default, all files are be considered."+
-		"The suffix is case insensitive.")
+		"jpeg files you would specify either 'jpg' or '.jpg'. By default, all files are considered.")
 	gnuflag.BoolVar(&options.helpRequested, "h", false, "This help message.")
 	gnuflag.BoolVar(&options.helpRequested, "help", false, "This help message.")
 	gnuflag.Parse(true)
