@@ -52,7 +52,8 @@ type File struct {
 type Files []File
 
 func (f File) String() string {
-	return fmt.Sprintf("{name: \"%s\", path: \"%s\", md5sum: \"%s\"}", f.name, f.path, f.md5sum)
+	return fmt.Sprintf("{name: \"%s\", path: \"%s\", lastPicked: %s, md5sum: \"%s\"}",
+		f.name, f.path, f.lastPicked, f.md5sum)
 }
 
 func (fs Files) String() string {
@@ -186,8 +187,9 @@ func copyFile(src, dst string) (int64, error) {
 }
 
 // pickFiles randomly picks files and copies those to the destination folder.
-func pickFiles() {
-	var allFiles = readFiles(options.folders)
+// The function updates the timestampes on the chosen files and returns the
+// updated list of Files.
+func pickFiles(allFiles Files) Files {
 	var pickedFileIndices = []int{}
 	var allFileIndices = []int{}
 	var suffixRegex = ".*$"
@@ -206,7 +208,7 @@ func pickFiles() {
 	for i := 0; i < options.n; i++ {
 		if len(allFileIndices) == 0 {
 			log.Warn().Msg("Could not find any files")
-			return
+			return allFiles
 		}
 		j := rand.Intn(len(allFileIndices))
 		pickedFileIndices = append(pickedFileIndices, allFileIndices[j])
@@ -214,12 +216,13 @@ func pickFiles() {
 		allFileIndices = allFileIndices[:len(allFileIndices)-1]
 	}
 
-	for _, file := range pickedFileIndices {
-		allFiles[file].lastPicked = time.Now()
-		log.Info().Msgf("Selected %s", allFiles[file])
-	}
-
 	if !options.dryRun {
+		// Update timestamp of chosen files.
+		for _, file := range pickedFileIndices {
+			allFiles[file].lastPicked = time.Now()
+			log.Info().Msgf("Selected %s", allFiles[file])
+		}
+
 		_, err := os.Stat(options.output)
 		if err == nil {
 			log.Fatal().Msg("destination folder already exists, aborting")
@@ -236,6 +239,7 @@ func pickFiles() {
 			}
 		}
 	}
+	return allFiles
 }
 
 func main() {
@@ -264,5 +268,6 @@ func main() {
 	log.Info().Msgf("Source folders: %s", options.folders.String())
 	log.Info().Msgf("The selected files will go into the '%s' folder", options.output)
 
-	pickFiles()
+	allFiles := readFiles(options.folders)
+	allFiles = pickFiles(allFiles)
 }
