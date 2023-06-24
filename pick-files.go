@@ -242,6 +242,40 @@ func pickFiles(allFiles Files) Files {
 	return allFiles
 }
 
+// loadAllFiles loads file information from a previous run.
+func loadAllFiles() Files {
+	return Files{}
+}
+
+// storeAllFiles stores file information from this run.
+func storeAllFiles(allFiles Files) {}
+
+// refreshAllFiles merges newFiles with oldFiles such that the merged Files
+// contains:
+// 1. all files present in newFiles
+// 2. existing timestamps are taken from oldFiles
+func refreshAllFiles(oldFiles, newFiles Files) Files {
+	var result Files = Files{}
+	for _, file := range newFiles {
+		for _, oldFile := range oldFiles {
+			if file.md5sum == oldFile.md5sum {
+				file.lastPicked = oldFile.lastPicked
+				break
+			}
+		}
+		result = append(result, file)
+		log.Debug().Msgf("appending %s", file)
+	}
+	return result
+}
+
+// mergeFiles merges to Files such that the more recent lastPicked timestamp is
+// used.
+func mergeFiles(a, b Files) Files {
+	var result Files = Files{}
+	return result
+}
+
 func main() {
 	parseCommandline()
 
@@ -268,6 +302,10 @@ func main() {
 	log.Info().Msgf("Source folders: %s", options.folders.String())
 	log.Info().Msgf("The selected files will go into the '%s' folder", options.output)
 
-	allFiles := readFiles(options.folders)
+	var oldAllFiles Files = loadAllFiles()
+	var currentAllFiles Files = readFiles(options.folders)
+	var allFiles Files = refreshAllFiles(oldAllFiles, currentAllFiles)
 	allFiles = pickFiles(allFiles)
+	allFiles = mergeFiles(oldAllFiles, allFiles)
+	storeAllFiles(allFiles)
 }

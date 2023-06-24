@@ -2,6 +2,7 @@ package main
 
 import (
 	"testing"
+	"time"
 )
 
 func compareFileList(a, b Files) bool {
@@ -629,6 +630,77 @@ func TestReadFiles2(t *testing.T) {
 		},
 	}
 	got := readFiles([]string{"artifacts/a/a"})
+	if !compareFileList(want, got) {
+		t.Errorf("got: %s, want: %s\n", got, want)
+	}
+}
+
+func TestRefreshAllFiles(t *testing.T) {
+	oldTimestamp, _ := time.Parse(time.RFC822, "02 Jan 06 15:04 MST")
+	var oldFiles Files = Files{
+		{
+			name:       "010-5da64787-9780-4c4f-af9d-5a03ae9d4570.tif",
+			path:       "artifacts/a/a/010-5da64787-9780-4c4f-af9d-5a03ae9d4570.tif",
+			md5sum:     "3ea8aff36c2fb464d4cffa7a7f3bcf24",
+			lastPicked: oldTimestamp,
+		},
+		{
+			name:   "010-7a7b93fe-2630-4706-8430-cb801032ef58.tif",
+			path:   "artifacts/a/a/010-7a7b93fe-2630-4706-8430-cb801032ef58.tif",
+			md5sum: "49ec45e103a8b84e86a323aba911855d",
+		},
+		{
+			name:   "010-c432e094-3114-4aa0-b1c4-eacc25165e36.png",
+			path:   "artifacts/a/a/010-c432e094-3114-4aa0-b1c4-eacc25165e36.png",
+			md5sum: "5f1a2dfd4551f479c5097d510a89694b",
+		},
+	}
+	var newFiles Files = Files{
+		{
+			name:   "010-4089c12f-155a-4ca4-a568-89e647031e9a.jpg",
+			path:   "artifacts/a/a/010-4089c12f-155a-4ca4-a568-89e647031e9a.jpg",
+			md5sum: "f4ccc41e04cc16bfec6addc980b53970",
+		},
+		{
+			name:   "010-4a9b928d-3ac5-4599-ae57-730c855a617f.jpg",
+			path:   "artifacts/a/a/010-4a9b928d-3ac5-4599-ae57-730c855a617f.jpg",
+			md5sum: "27501394b48a557aacad488cc6a0c7c6",
+		},
+		{
+			name:   "010-5da64787-9780-4c4f-af9d-5a03ae9d4570.tif",
+			path:   "artifacts/a/a/010-5da64787-9780-4c4f-af9d-5a03ae9d4570.tif",
+			md5sum: "3ea8aff36c2fb464d4cffa7a7f3bcf24",
+		},
+		{
+			name:   "010-7a7b93fe-2630-4706-8430-cb801032ef58.tif",
+			path:   "artifacts/a/a/010-7a7b93fe-2630-4706-8430-cb801032ef58.tif",
+			md5sum: "49ec45e103a8b84e86a323aba911855d",
+		},
+	}
+	var want Files = Files{
+		{
+			name:   "010-4089c12f-155a-4ca4-a568-89e647031e9a.jpg",
+			path:   "artifacts/a/a/010-4089c12f-155a-4ca4-a568-89e647031e9a.jpg",
+			md5sum: "f4ccc41e04cc16bfec6addc980b53970",
+		},
+		{
+			name:   "010-4a9b928d-3ac5-4599-ae57-730c855a617f.jpg",
+			path:   "artifacts/a/a/010-4a9b928d-3ac5-4599-ae57-730c855a617f.jpg",
+			md5sum: "27501394b48a557aacad488cc6a0c7c6",
+		},
+		{
+			name:       "010-5da64787-9780-4c4f-af9d-5a03ae9d4570.tif",
+			path:       "artifacts/a/a/010-5da64787-9780-4c4f-af9d-5a03ae9d4570.tif",
+			md5sum:     "3ea8aff36c2fb464d4cffa7a7f3bcf24",
+			lastPicked: oldTimestamp,
+		},
+		{
+			name:   "010-7a7b93fe-2630-4706-8430-cb801032ef58.tif",
+			path:   "artifacts/a/a/010-7a7b93fe-2630-4706-8430-cb801032ef58.tif",
+			md5sum: "49ec45e103a8b84e86a323aba911855d",
+		},
+	}
+	var got Files = refreshAllFiles(oldFiles, newFiles)
 	if !compareFileList(want, got) {
 		t.Errorf("got: %s, want: %s\n", got, want)
 	}
