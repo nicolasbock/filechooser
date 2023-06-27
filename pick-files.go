@@ -51,6 +51,19 @@ type File struct {
 
 type Files []File
 
+const dbSchema = "1"
+
+type db struct {
+	schema string
+	files  Files
+}
+
+func newDB () db {
+	var db = db{}
+	db.schema = dbSchema
+	return db
+}
+
 func (f File) String() string {
 	return fmt.Sprintf("{name: \"%s\", path: \"%s\", md5sum: \"%s\"}", f.name, f.path, f.md5sum)
 }
