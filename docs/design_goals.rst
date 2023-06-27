@@ -5,9 +5,25 @@ Design Goals
    :maxdepth: 2
    :caption: Contents
 
+.. |check| raw:: html
+
+    <input checked=""  type="checkbox">
+
+.. |check_| raw:: html
+
+    <input checked=""  disabled="" type="checkbox">
+
+.. |uncheck| raw:: html
+
+    <input type="checkbox">
+
+.. |uncheck_| raw:: html
+
+    <input disabled="" type="checkbox">
+
 1. Selection
 
-  - Select `N` random pictures from multiple folders
+  - |check_| Select `N` random pictures from multiple folders
   - The selection is recursive
   - The highest order folder is picked for selection
   - More than one folder can be picked for selection
