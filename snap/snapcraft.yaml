@@ -8,7 +8,8 @@ description: |
   single destination folder.
 icon: icon/icon-256.svg
 license: Apache-2.0
-website: https://github.com/nicolasbock/filechooser
+source-code: https://github.com/nicolasbock/filechooser
+website: https://filechooser.readthedocs.io/
 
 grade: stable
 confinement: strict
