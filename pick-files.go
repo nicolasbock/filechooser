@@ -3,6 +3,7 @@ package main
 import (
 	"crypto/md5"
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"io"
 	"math/rand"
@@ -43,17 +44,17 @@ func (f *Suffixes) String() string {
 
 // File represents a regular file in the source folders.
 type File struct {
-	name       string
-	path       string
-	md5sum     string
-	lastPicked time.Time
+	Name       string    `json:"name"`
+	Path       string    `json:"path"`
+	Md5sum     string    `json:"md5sum"`
+	LastPicked time.Time `json:"lastPicked"`
 }
 
 type Files []File
 
 func (f File) String() string {
 	return fmt.Sprintf("{name: \"%s\", path: \"%s\", lastPicked: %s, md5sum: \"%s\"}",
-		f.name, f.path, f.lastPicked, f.md5sum)
+		f.Name, f.Path, f.LastPicked, f.Md5sum)
 }
 
 func (fs Files) String() string {
@@ -143,9 +144,9 @@ func readFiles(folders []string) Files {
 					return Files{}
 				}
 				files = append(files, File{
-					name:   entry.Name(),
-					path:   folder + "/" + entry.Name(),
-					md5sum: hex.EncodeToString(hash.Sum(nil)),
+					Name:   entry.Name(),
+					Path:   folder + "/" + entry.Name(),
+					Md5sum: hex.EncodeToString(hash.Sum(nil)),
 				})
 			}
 		}
@@ -200,7 +201,7 @@ func pickFiles(allFiles Files) Files {
 	var re = regexp.MustCompile(suffixRegex)
 
 	for i := 0; i < len(allFiles); i++ {
-		if re.MatchString(allFiles[i].path) {
+		if re.MatchString(allFiles[i].Path) {
 			allFileIndices = append(allFileIndices, i)
 		}
 	}
@@ -219,7 +220,7 @@ func pickFiles(allFiles Files) Files {
 	if !options.dryRun {
 		// Update timestamp of chosen files.
 		for _, file := range pickedFileIndices {
-			allFiles[file].lastPicked = time.Now()
+			allFiles[file].LastPicked = time.Now()
 			log.Info().Msgf("Selected %s", allFiles[file])
 		}
 
@@ -233,9 +234,9 @@ func pickFiles(allFiles Files) Files {
 		}
 		for _, file := range pickedFileIndices {
 			log.Info().Msgf("copying %s", allFiles[file])
-			_, err := copyFile(allFiles[file].path, options.output+"/"+allFiles[file].name)
+			_, err := copyFile(allFiles[file].Path, options.output+"/"+allFiles[file].Name)
 			if err != nil {
-				log.Fatal().Msgf("error copying %s to %s (%s)", allFiles[file].path, options.output, err.Error())
+				log.Fatal().Msgf("error copying %s to %s (%s)", allFiles[file].Path, options.output, err.Error())
 			}
 		}
 	}
@@ -244,11 +245,36 @@ func pickFiles(allFiles Files) Files {
 
 // loadAllFiles loads file information from a previous run.
 func loadAllFiles() Files {
-	return Files{}
+	var allFiles Files = Files{}
+	_, err := os.Stat("pick-files.db")
+	if err != nil {
+		log.Info().Msg("Could not find old database")
+		return Files{}
+	}
+	encoded, err := os.ReadFile("pick-files.db")
+	if err != nil {
+		log.Fatal().Msgf("error reading database: %s", err.Error())
+	}
+	err = json.Unmarshal(encoded, &allFiles)
+	if err != nil {
+		log.Fatal().Msgf("error unmarshalling database content: %s", err.Error())
+	}
+	log.Debug().Msgf("read %d records from database", len(allFiles))
+	return allFiles
 }
 
 // storeAllFiles stores file information from this run.
-func storeAllFiles(allFiles Files) {}
+func storeAllFiles(allFiles Files) {
+	log.Debug().Msgf("writing database with %d records", len(allFiles))
+	encoded, err := json.MarshalIndent(allFiles, "", "  ")
+	if err != nil {
+		log.Fatal().Msgf("error marshalling data: %s", err.Error())
+	}
+	err = os.WriteFile("pick-files.db", encoded, 0644)
+	if err != nil {
+		log.Fatal().Msgf("error writing database: %s", err.Error())
+	}
+}
 
 // refreshAllFiles merges newFiles with oldFiles such that the merged Files
 // contains:
@@ -258,8 +284,8 @@ func refreshAllFiles(oldFiles, newFiles Files) Files {
 	var result Files = Files{}
 	for _, file := range newFiles {
 		for _, oldFile := range oldFiles {
-			if file.md5sum == oldFile.md5sum {
-				file.lastPicked = oldFile.lastPicked
+			if file.Md5sum == oldFile.Md5sum {
+				file.LastPicked = oldFile.LastPicked
 				break
 			}
 		}
@@ -273,6 +299,29 @@ func refreshAllFiles(oldFiles, newFiles Files) Files {
 // used.
 func mergeFiles(a, b Files) Files {
 	var result Files = Files{}
+	for _, fileA := range a {
+		merged := fileA
+		for _, fileB := range b {
+			if fileA.Md5sum == fileB.Md5sum {
+				if fileA.LastPicked.Compare(fileB.LastPicked) <= 0 {
+					merged.LastPicked = fileB.LastPicked
+				}
+			}
+		}
+		result = append(result, merged)
+	}
+	for _, fileB := range b {
+		foundB := false
+		for _, fileA := range a {
+			if fileA.Md5sum == fileB.Md5sum {
+				foundB = true
+				break
+			}
+		}
+		if !foundB {
+			result = append(result, fileB)
+		}
+	}
 	return result
 }
 
