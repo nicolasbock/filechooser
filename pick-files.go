@@ -53,15 +53,18 @@ type File struct {
 type Files []File
 
 const dbSchema = "1"
+const dbFilename = "pick-files-db.json"
 
 type db struct {
-	schema string
-	files  Files
+	Schema string `json:"schema"`
+	Files  Files  `json:"files"`
 }
 
-func newDB () db {
+// newDB is a factory method to get a new db object with the correct schema
+// version.
+func newDB() db {
 	var db = db{}
-	db.schema = dbSchema
+	db.Schema = dbSchema
 	return db
 }
 
@@ -91,7 +94,7 @@ type ProgramOptions struct {
 	suffixes       Suffixes
 }
 
-var options ProgramOptions = ProgramOptions{}
+var options = ProgramOptions{}
 
 // printUsage prints program usage.
 func printUsage() {
@@ -258,34 +261,46 @@ func pickFiles(allFiles Files) Files {
 	return allFiles
 }
 
-// loadAllFiles loads file information from a previous run.
-func loadAllFiles() Files {
-	var allFiles Files = Files{}
-	_, err := os.Stat("pick-files.db")
+// getDBPath returns the full path to the database file.
+func getDBPath() string {
+	var fullDBFilename = dbFilename
+	dbPath, pathSet := os.LookupEnv("SNAP_USER_DATA")
+	if pathSet {
+		fullDBFilename = path.Join(dbPath, fullDBFilename)
+	}
+	return fullDBFilename
+}
+
+// loadDB loads file information from a previous run.
+func loadDB() Files {
+	var result = newDB()
+	_, err := os.Stat(getDBPath())
 	if err != nil {
-		log.Info().Msg("Could not find old database")
+		log.Info().Msgf("Could not find old database at %s", getDBPath())
 		return Files{}
 	}
-	encoded, err := os.ReadFile("pick-files.db")
+	encoded, err := os.ReadFile(getDBPath())
 	if err != nil {
 		log.Fatal().Msgf("error reading database: %s", err.Error())
 	}
-	err = json.Unmarshal(encoded, &allFiles)
+	err = json.Unmarshal(encoded, &result)
 	if err != nil {
 		log.Fatal().Msgf("error unmarshalling database content: %s", err.Error())
 	}
-	log.Debug().Msgf("read %d records from database", len(allFiles))
-	return allFiles
+	log.Debug().Msgf("read %d records from database", len(result.Files))
+	return result.Files
 }
 
-// storeAllFiles stores file information from this run.
-func storeAllFiles(allFiles Files) {
+// storeDB stores file information from this run.
+func storeDB(allFiles Files) {
 	log.Debug().Msgf("writing database with %d records", len(allFiles))
-	encoded, err := json.MarshalIndent(allFiles, "", "  ")
+	var result = newDB()
+	result.Files = allFiles
+	encoded, err := json.MarshalIndent(result, "", "  ")
 	if err != nil {
 		log.Fatal().Msgf("error marshalling data: %s", err.Error())
 	}
-	err = os.WriteFile("pick-files.db", encoded, 0644)
+	err = os.WriteFile(getDBPath(), encoded, 0644)
 	if err != nil {
 		log.Fatal().Msgf("error writing database: %s", err.Error())
 	}
@@ -366,10 +381,10 @@ func main() {
 	log.Info().Msgf("Source folders: %s", options.folders.String())
 	log.Info().Msgf("The selected files will go into the '%s' folder", options.output)
 
-	var oldAllFiles Files = loadAllFiles()
-	var currentAllFiles Files = readFiles(options.folders)
-	var allFiles Files = refreshAllFiles(oldAllFiles, currentAllFiles)
+	var oldAllFiles = loadDB()
+	var currentAllFiles = readFiles(options.folders)
+	var allFiles = refreshAllFiles(oldAllFiles, currentAllFiles)
 	allFiles = pickFiles(allFiles)
 	allFiles = mergeFiles(oldAllFiles, allFiles)
-	storeAllFiles(allFiles)
+	storeDB(allFiles)
 }
