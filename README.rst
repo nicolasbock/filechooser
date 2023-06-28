@@ -12,7 +12,7 @@
 
 .. image:: https://github.com/nicolasbock/filechooser/actions/workflows/snap-package.yaml/badge.svg
     :target: https://github.com/nicolasbock/filechooser/actions/workflows/snap-package.yaml
-    :alt:Build and Test
+    :alt: Build and Test
 
 .. image:: https://badge.fury.io/py/filechooser.svg
     :target: https://badge.fury.io/py/filechooser
@@ -31,7 +31,7 @@ to a single destination folder.
 Usage Example
 -------------
 
-.. code-block::
+.. code-block:: console
 
     pick-files --number 20 --destination new_folder --suffix .jpg --suffix .avi --folder folder1 --folder folder2
 
@@ -43,14 +43,14 @@ There are several options to install this script
 Get the snap
 ------------
 
-.. code-block::
+.. code-block:: console
 
     snap install pick-files
 
 Build it from source
 --------------------
 
-.. code-block::
+.. code-block:: console
 
     make
 
