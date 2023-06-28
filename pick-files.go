@@ -48,6 +48,7 @@ type File struct {
 	Path       string    `json:"path"`
 	Md5sum     string    `json:"md5sum"`
 	LastPicked time.Time `json:"lastPicked"`
+	LastSeen   time.Time `json:"lastSeen"`
 }
 
 type Files []File
@@ -148,9 +149,9 @@ func parseCommandline() {
 	}
 }
 
-// readFiles recursively reads all files in a list of folders and returns a list
+// getFiles recursively reads all files in a list of folders and returns a list
 // of files.
-func readFiles(folders []string) Files {
+func getFiles(folders []string) Files {
 	var files = Files{}
 	for _, folder := range folders {
 		dirEntries, err := os.ReadDir(folder)
@@ -160,7 +161,7 @@ func readFiles(folders []string) Files {
 		}
 		for _, entry := range dirEntries {
 			if entry.IsDir() {
-				files = append(files, readFiles([]string{folder + "/" + entry.Name()})...)
+				files = append(files, getFiles([]string{folder + "/" + entry.Name()})...)
 			} else {
 				file, err := os.Open(folder + "/" + entry.Name())
 				if err != nil {
@@ -174,9 +175,10 @@ func readFiles(folders []string) Files {
 					return Files{}
 				}
 				files = append(files, File{
-					Name:   entry.Name(),
-					Path:   folder + "/" + entry.Name(),
-					Md5sum: hex.EncodeToString(hash.Sum(nil)),
+					Name:     entry.Name(),
+					Path:     folder + "/" + entry.Name(),
+					Md5sum:   hex.EncodeToString(hash.Sum(nil)),
+					LastSeen: time.Now(),
 				})
 			}
 		}
@@ -318,11 +320,10 @@ func storeDB(allFiles Files) {
 	}
 }
 
-// refreshAllFiles merges newFiles with oldFiles such that the merged Files
-// contains:
-// 1. all files present in newFiles
-// 2. existing timestamps are taken from oldFiles
-func refreshAllFiles(oldFiles, newFiles Files) Files {
+// refreshLastPicked refreshes the LastPicked timestamp in newFiles from entries
+// in oldFiles. It returns a new Files lit with the same files as in newFiles
+// but with updated timestamps.
+func refreshLastPicked(oldFiles, newFiles Files) Files {
 	var result Files = Files{}
 	for _, file := range newFiles {
 		for _, oldFile := range oldFiles {
@@ -332,13 +333,12 @@ func refreshAllFiles(oldFiles, newFiles Files) Files {
 			}
 		}
 		result = append(result, file)
-		log.Debug().Msgf("appending %s", file)
 	}
 	return result
 }
 
-// mergeFiles merges to Files such that the more recent lastPicked timestamp is
-// used.
+// mergeFiles merges two Files objects such that the most recent lastPicked and
+// lastSeen timestamps are used in case both lists have the same file.
 func mergeFiles(a, b Files) Files {
 	var result Files = Files{}
 	for _, fileA := range a {
@@ -347,6 +347,9 @@ func mergeFiles(a, b Files) Files {
 			if fileA.Md5sum == fileB.Md5sum {
 				if fileA.LastPicked.Compare(fileB.LastPicked) <= 0 {
 					merged.LastPicked = fileB.LastPicked
+				}
+				if fileA.LastSeen.Compare(fileB.LastSeen) <= 0 {
+					merged.LastSeen = fileB.LastSeen
 				}
 			}
 		}
@@ -367,6 +370,7 @@ func mergeFiles(a, b Files) Files {
 	return result
 }
 
+// initializeLogging initializes the logger.
 func initializeLogging() {
 	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
 	zerolog.SetGlobalLevel(zerolog.InfoLevel)
@@ -386,8 +390,7 @@ func main() {
 	log.Info().Msgf("The selected files will go into the '%s' folder", options.output)
 
 	var oldAllFiles = loadDB()
-	var currentAllFiles = readFiles(options.folders)
-	var allFiles = refreshAllFiles(oldAllFiles, currentAllFiles)
+	var allFiles = refreshLastPicked(oldAllFiles, getFiles(options.folders))
 	allFiles = pickFiles(allFiles)
 	allFiles = mergeFiles(oldAllFiles, allFiles)
 	storeDB(allFiles)
