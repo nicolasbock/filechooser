@@ -41,5 +41,3 @@ jobs:
       run: tox -e lint
     - name: Test
       run: tox -e py${TOX_PYTHON}
-    - name: Build docs
-      run: tox -e docs

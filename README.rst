@@ -2,6 +2,10 @@
     :target: https://filechooser.readthedocs.io/en/latest/?badge=latest
     :alt: Documentation Status
 
+.. raw:: html
+
+    <br />
+
 .. image:: https://github.com/nicolasbock/filechooser/actions/workflows/python-package.yaml/badge.svg
     :target: https://github.com/nicolasbock/filechooser/actions/workflows/python-package.yaml
     :alt: Build and test
@@ -14,13 +18,21 @@
     :target: https://github.com/nicolasbock/filechooser/actions/workflows/snap-package.yaml
     :alt: Build and Test
 
+.. raw:: html
+
+    <br />
+
 .. image:: https://badge.fury.io/py/filechooser.svg
     :target: https://badge.fury.io/py/filechooser
     :alt: Python Package
 
+.. raw:: html
+
+    <br />
+
 .. image:: https://snapcraft.io/static/images/badges/en/snap-store-black.svg
     :target: https://snapcraft.io/pick-files
-    :atl: Get it from the Snap Store
+    :alt: Get it from the Snap Store
 
 Introduction
 ============
