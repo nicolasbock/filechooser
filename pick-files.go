@@ -134,6 +134,18 @@ func parseCommandline() {
 	gnuflag.BoolVar(&options.helpRequested, "h", false, "This help message.")
 	gnuflag.BoolVar(&options.helpRequested, "help", false, "This help message.")
 	gnuflag.Parse(true)
+
+	if options.helpRequested {
+		gnuflag.Usage()
+		os.Exit(0)
+	}
+	if options.printVersion {
+		fmt.Printf("Version: %s\n", Version)
+		os.Exit(0)
+	}
+	if len(options.folders) == 0 {
+		options.folders = append(options.folders, ".")
+	}
 }
 
 // readFiles recursively reads all files in a list of folders and returns a list
@@ -355,27 +367,19 @@ func mergeFiles(a, b Files) Files {
 	return result
 }
 
-func main() {
-	parseCommandline()
-
-	if options.helpRequested {
-		gnuflag.Usage()
-		os.Exit(0)
-	}
-	if options.printVersion {
-		fmt.Printf("Version: %s\n", Version)
-		os.Exit(0)
-	}
-	if len(options.folders) == 0 {
-		options.folders = append(options.folders, ".")
-	}
-
+func initializeLogging() {
 	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
 	zerolog.SetGlobalLevel(zerolog.InfoLevel)
 	if options.debugRequested {
 		zerolog.SetGlobalLevel(zerolog.DebugLevel)
 	}
 	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
+}
+
+func main() {
+	parseCommandline()
+
+	initializeLogging()
 
 	log.Info().Msgf("Will pick %d file(s) randomly matching suffixes %s", options.n, options.suffixes.String())
 	log.Info().Msgf("Source folders: %s", options.folders.String())
