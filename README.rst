@@ -45,7 +45,8 @@ Usage Example
 
 .. code-block:: console
 
-    pick-files --number 20 --destination new_folder --suffix .jpg --suffix .avi --folder folder1 --folder folder2
+    pick-files --number 20 --destination new_folder \
+        --suffix .jpg --suffix .avi --folder folder1 --folder folder2
 
 Installation
 ------------
