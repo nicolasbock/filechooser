@@ -84,18 +84,21 @@ func (fs Files) String() string {
 }
 
 type ProgramOptions struct {
-	debugRequested bool
-	deleteExisting bool
-	dryRun         bool
-	folders        Folders
-	helpRequested  bool
-	n              int
-	output         string
-	printVersion   bool
-	suffixes       Suffixes
+	debugRequested  bool
+	deleteExisting  bool
+	dryRun          bool
+	folders         Folders
+	helpRequested   bool
+	n               int
+	output          string
+	printVersion    bool
+	suffixes        Suffixes
+	dbExpirationAge time.Duration
 }
 
-var options = ProgramOptions{}
+var options = ProgramOptions{
+	dbExpirationAge: 120 * 24 * time.Hour, // Expire DB entries older than 120 days
+}
 
 // printUsage prints program usage.
 func printUsage() {
@@ -149,9 +152,9 @@ func parseCommandline() {
 	}
 }
 
-// getFiles recursively reads all files in a list of folders and returns a list
+// getFilesFromFolders recursively reads all files in a list of folders and returns a list
 // of files.
-func getFiles(folders []string) Files {
+func getFilesFromFolders(folders []string) Files {
 	var files = Files{}
 	for _, folder := range folders {
 		dirEntries, err := os.ReadDir(folder)
@@ -161,7 +164,7 @@ func getFiles(folders []string) Files {
 		}
 		for _, entry := range dirEntries {
 			if entry.IsDir() {
-				files = append(files, getFiles([]string{folder + "/" + entry.Name()})...)
+				files = append(files, getFilesFromFolders([]string{folder + "/" + entry.Name()})...)
 			} else {
 				file, err := os.Open(folder + "/" + entry.Name())
 				if err != nil {
@@ -253,7 +256,7 @@ func pickFiles(allFiles Files) Files {
 		// Update timestamp of chosen files.
 		for _, file := range pickedFileIndices {
 			allFiles[file].LastPicked = time.Now().UTC()
-			log.Info().Msgf("Selected %s", allFiles[file])
+			log.Debug().Msgf("Selected %s", allFiles[file])
 		}
 
 		_, err := os.Stat(options.output)
@@ -265,7 +268,7 @@ func pickFiles(allFiles Files) Files {
 			log.Fatal().Msgf("error creating destination folder %s: %s", options.output, err.Error())
 		}
 		for _, file := range pickedFileIndices {
-			log.Info().Msgf("copying %s", allFiles[file])
+			log.Debug().Msgf("copying %s", allFiles[file])
 			_, err := copyFile(allFiles[file].Path, options.output+"/"+allFiles[file].Name)
 			if err != nil {
 				log.Fatal().Msgf("error copying %s to %s (%s)", allFiles[file].Path, options.output, err.Error())
@@ -338,7 +341,7 @@ func refreshLastPicked(oldFiles, newFiles Files) Files {
 }
 
 // mergeFiles merges two Files objects such that the most recent lastPicked and
-// lastSeen timestamps are used in case both lists have the same file.
+// lastSeen timestamps are used in case both lists hold the same file.
 func mergeFiles(a, b Files) Files {
 	var result Files = Files{}
 	for _, fileA := range a {
@@ -380,6 +383,22 @@ func initializeLogging() {
 	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
 }
 
+// expireOldDBEntries returns a Files object in which all Files have a LastSeen
+// timestamp within maxAge.
+func expireOldDBEntries(files Files, maxAge time.Duration) Files {
+	log.Debug().Msgf("Expiring files not seen for more than %s", maxAge)
+	var now = time.Now()
+	var result Files = Files{}
+	for _, file := range files {
+		if now.Sub(file.LastSeen) < maxAge {
+			result = append(result, file)
+		} else {
+			log.Debug().Msgf("Expiring %s", file)
+		}
+	}
+	return result
+}
+
 func main() {
 	parseCommandline()
 
@@ -389,9 +408,10 @@ func main() {
 	log.Info().Msgf("Source folders: %s", options.folders.String())
 	log.Info().Msgf("The selected files will go into the '%s' folder", options.output)
 
-	var oldAllFiles = loadDB()
-	var allFiles = refreshLastPicked(oldAllFiles, getFiles(options.folders))
-	allFiles = pickFiles(allFiles)
-	allFiles = mergeFiles(oldAllFiles, allFiles)
+	var allFiles = loadDB()
+	var files = refreshLastPicked(allFiles, getFilesFromFolders(options.folders))
+	files = pickFiles(files)
+	allFiles = mergeFiles(allFiles, files)
+	allFiles = expireOldDBEntries(allFiles, options.dbExpirationAge)
 	storeDB(allFiles)
 }
