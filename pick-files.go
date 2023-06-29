@@ -178,7 +178,7 @@ func getFiles(folders []string) Files {
 					Name:     entry.Name(),
 					Path:     folder + "/" + entry.Name(),
 					Md5sum:   hex.EncodeToString(hash.Sum(nil)),
-					LastSeen: time.Now(),
+					LastSeen: time.Now().UTC(),
 				})
 			}
 		}
@@ -252,7 +252,7 @@ func pickFiles(allFiles Files) Files {
 	if !options.dryRun {
 		// Update timestamp of chosen files.
 		for _, file := range pickedFileIndices {
-			allFiles[file].LastPicked = time.Now()
+			allFiles[file].LastPicked = time.Now().UTC()
 			log.Info().Msgf("Selected %s", allFiles[file])
 		}
 
