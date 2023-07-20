@@ -5,7 +5,9 @@ Maintainer: Nicolas Bock <nicolasbock@gmail.com>
 Build-Depends:
  debhelper-compat (= 12),
  dh-golang,
- golang
+ golang,
+ golang-github-juju-gnuflag-dev,
+ golang-github-rs-zerolog-dev
 Standards-Version: 4.5.0
 Homepage: https://github.com/nicolasbock/filechooser
 
