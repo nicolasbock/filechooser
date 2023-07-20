@@ -1,0 +1,6 @@
+filechooser (1.0.0-1) UNRELEASED; urgency=low
+
+  * Initial release. Closes: #nnnn
+    <nnnn is the bug number of your ITP>
+
+ -- Nicolas Bock <nicolasbock@gmail.com>  Thu, 20 Jul 2023 12:02:52 +0000

@@ -1,0 +1,8 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: filechooser
+Upstream-Contact: <preferred name and address to reach the upstream project>
+Source: <url://example.com>
+
+Files: *
+Copyright: 2023 Nicolas Bock, Guido Bender
+License: Apache-2.0
