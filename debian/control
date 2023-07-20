@@ -4,7 +4,8 @@ Priority: optional
 Maintainer: Nicolas Bock <nicolasbock@gmail.com>
 Build-Depends:
  debhelper-compat (= 12),
- dh-golang
+ dh-golang,
+ golang
 Standards-Version: 4.5.0
 Homepage: https://github.com/nicolasbock/filechooser
 
