@@ -1,6 +1,7 @@
 package main
 
 import (
+	"testing"
 )
 
 func compareFileList(a, b Files) bool {
@@ -13,4 +14,11 @@ func compareFileList(a, b Files) bool {
 		}
 	}
 	return true
+}
+
+func TestNewDB(t *testing.T) {
+	var db = newDB()
+	if db.Schema != dbSchema {
+		t.Errorf("Expected schema %d but got %d\n", dbSchema, db.Schema)
+	}
 }

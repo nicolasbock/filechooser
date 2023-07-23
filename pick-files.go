@@ -53,12 +53,12 @@ type File struct {
 
 type Files []File
 
-const dbSchema = "1"
-const dbFilename = "pick-files-db.json"
+const dbSchema int = 1
+const dbFilename string = "pick-files-db.json"
 
 type db struct {
-	Schema string `json:"schema"`
-	Files  Files  `json:"files"`
+	Schema int   `json:"schema"`
+	Files  Files `json:"files"`
 }
 
 // newDB is a factory method to get a new db object with the correct schema
