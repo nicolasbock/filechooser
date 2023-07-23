@@ -25,9 +25,7 @@ jobs:
           go-version: "1.20"
 
       - name: Build
-        run: |
-          go build -ldflags "-X main.Version=$(git describe --tags)" -v -o pick-files ./...
-
+        run: make
       - name: Simple test
         run: |
           set -e -u -x
@@ -37,4 +35,7 @@ jobs:
           ./pick-files --number 10 --destination output-3 --folder artifacts/a/a
 
       - name: Test
-        run: go test -v ./...
+        run: make test
+
+      - name: Coverage
+        run: make coverage
