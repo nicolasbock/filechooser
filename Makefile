@@ -5,6 +5,10 @@ pick-files: pick-files.go
 test:
 	go test -v
 
+.PHONY: coverage
+coverage:
+	go test -cover -v
+
 .PHONY: build
 build:
 	rm -rf build
