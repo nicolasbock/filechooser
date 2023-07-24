@@ -26,7 +26,6 @@ Design Goals
   - |check_| Select `N` random pictures from multiple folders
   - |check_| The selection is recursive
   - |check_| When selected the pictures are copied into a specific file path.
-  - The highest order folder is picked for selection
   - More than one folder can be picked for selection
   - Several different frame categories combinations exist, e.g. `a`,
     `b`, `c`, `d`. Frame categories may be combined with each other,
@@ -41,8 +40,8 @@ certain time interval.
    - |check_| When a picture is selected, a time stamp is created for this
      picture
    - The time stamp indicates time of last creation
-   - A time stand is needed for each category
-   - A data base might be needed for tracking the time stamps
+   - A timestamp is needed for each category
+   - A database might be needed for tracking the time stamps
 
 3. Picture exclusion
 
