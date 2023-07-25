@@ -2,9 +2,9 @@
 
     <br />
 
-.. image:: https://readthedocs.org/projects/filechooser/badge/?version=latest
-    :target: https://filechooser.readthedocs.io/en/latest/?badge=latest
-    :alt: Documentation Status
+.. image:: https://snapcraft.io/static/images/badges/en/snap-store-black.svg
+    :target: https://snapcraft.io/pick-files
+    :alt: Get it from the Snap Store
 
 |br|
 
@@ -34,9 +34,9 @@
 
 |br|
 
-.. image:: https://snapcraft.io/static/images/badges/en/snap-store-black.svg
-    :target: https://snapcraft.io/pick-files
-    :alt: Get it from the Snap Store
+.. image:: https://readthedocs.org/projects/filechooser/badge/?version=latest
+    :target: https://filechooser.readthedocs.io/en/latest/?badge=latest
+    :alt: Documentation Status
 
 Introduction
 ============
