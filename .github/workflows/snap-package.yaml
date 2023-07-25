@@ -37,7 +37,7 @@ jobs:
           name: snap
           path: ${{ steps.snapcraft.outputs.snap }}
 
-      - uses: actions/upload-artifact@v1
+      - uses: actions/upload-artifact@v3
         if: failure()
         with:
           name: logs
