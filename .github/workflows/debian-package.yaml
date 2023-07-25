@@ -37,4 +37,10 @@ jobs:
           ${PWD} HEAD
           EOF
           cat ../recipe
-          git-build-recipe --allow-fallback-to-native ../recipe ../build
+          git-build-recipe --allow-fallback-to-native ../recipe build
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-build-package
+          path: build/**
