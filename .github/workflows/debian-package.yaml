@@ -22,7 +22,11 @@ jobs:
       - name: Install build dependencies
         run: |
           set -e -u -x
-          sudo apt-get install --yes --no-install-recommends git-build-recipe
+          sudo apt-get install --yes --no-install-recommends \
+            devscripts \
+            git-build-recipe \
+            pristine-tar \
+            quilt
           sudo apt-get build-dep --yes .
 
       - name: Build
