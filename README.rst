@@ -10,15 +10,19 @@
 
 .. image:: https://github.com/nicolasbock/filechooser/actions/workflows/python-package.yaml/badge.svg
     :target: https://github.com/nicolasbock/filechooser/actions/workflows/python-package.yaml
-    :alt: Build and test
+    :alt: Build and test Python package
 
 .. image:: https://github.com/nicolasbock/filechooser/actions/workflows/go-package.yaml/badge.svg
     :target: https://github.com/nicolasbock/filechooser/actions/workflows/go-package.yaml
-    :alt: Build and test
+    :alt: Build and test Go code
 
 .. image:: https://github.com/nicolasbock/filechooser/actions/workflows/snap-package.yaml/badge.svg
     :target: https://github.com/nicolasbock/filechooser/actions/workflows/snap-package.yaml
-    :alt: Build and Test
+    :alt: Build and Test snap package
+
+.. image:: https://github.com/nicolasbock/filechooser/actions/workflows/debian-package.yaml/badge.svg
+    :target: https://github.com/nicolasbock/filechooser/actions/workflows/debian-package.yaml
+    :alt: Build and Test Debian package
 
 |br|
 
