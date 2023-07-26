@@ -1,7 +1,9 @@
 package main
 
 import (
+	"bytes"
 	"crypto/md5"
+	"encoding/csv"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
@@ -83,18 +85,48 @@ func (fs Files) String() string {
 	return strings.Join(intermediate, ", ")
 }
 
+type DumpFormat int
+
+const (
+	CSV DumpFormat = iota
+	JSON
+)
+
+func (f *DumpFormat) String() string {
+	switch *f {
+	case JSON:
+		return "JSON"
+	case CSV:
+		return "CSV"
+	}
+	return "unknown"
+}
+
+func (f *DumpFormat) Set(s string) error {
+	switch s {
+	case "JSON":
+		*f = JSON
+	case "CSV":
+		*f = CSV
+	default:
+		log.Fatal().Msgf("Unknown database dumpt format '%s'", s)
+	}
+	return nil
+}
+
 type ProgramOptions struct {
-	debugRequested  bool
-	deleteExisting  bool
-	dryRun          bool
-	folders         Folders
-	helpRequested   bool
-	n               int
-	output          string
-	printVersion    bool
-	suffixes        Suffixes
-	dbExpirationAge time.Duration
-	printDatabase   bool
+	debugRequested      bool
+	deleteExisting      bool
+	dryRun              bool
+	folders             Folders
+	helpRequested       bool
+	n                   int
+	output              string
+	printVersion        bool
+	suffixes            Suffixes
+	dbExpirationAge     time.Duration
+	printDatabase       bool
+	printDatabaseFormat DumpFormat
 }
 
 var options = ProgramOptions{
@@ -139,6 +171,7 @@ func parseCommandline() {
 	gnuflag.BoolVar(&options.helpRequested, "h", false, "This help message.")
 	gnuflag.BoolVar(&options.helpRequested, "help", false, "This help message.")
 	gnuflag.BoolVar(&options.printDatabase, "print-database", false, "Print the internal database and exit.")
+	gnuflag.Var(&options.printDatabaseFormat, "print-database-format", "Format of printed database; possible options are CSV and JSON.")
 	gnuflag.Parse(true)
 
 	if options.helpRequested {
@@ -402,23 +435,46 @@ func expireOldDBEntries(files Files, maxAge time.Duration) Files {
 }
 
 func main() {
+	initializeLogging()
+
 	parseCommandline()
 
-	initializeLogging()
+	var allFiles = loadDB()
+
+	if options.printDatabase {
+		var fileString []byte
+		if len(allFiles) == 0 {
+			log.Info().Msg("Databse empty")
+			os.Exit(0)
+		}
+		switch options.printDatabaseFormat {
+		case JSON:
+			fileString, _ = json.MarshalIndent(allFiles, "", "  ")
+		case CSV:
+			b := new(bytes.Buffer)
+			csvWriter := csv.NewWriter(b)
+			headers := []string{
+				"Name",
+				"Path",
+				"md5sum",
+				"Last Picked",
+				"Last Seen",
+			}
+			csvWriter.Write(headers)
+			for _, file := range allFiles {
+				csvWriter.Write([]string{file.Name, file.Path, file.Md5sum, file.LastPicked.String(), file.LastSeen.String()})
+			}
+			csvWriter.Flush()
+			fileString = b.Bytes()
+		}
+		fmt.Println(string(fileString))
+		os.Exit(0)
+	}
 
 	log.Info().Msgf("%s-%s", path.Base(os.Args[0]), Version)
 	log.Info().Msgf("Will pick %d file(s) randomly matching suffixes %s", options.n, options.suffixes.String())
 	log.Info().Msgf("Source folders: %s", options.folders.String())
 	log.Info().Msgf("The selected files will go into the '%s' folder", options.output)
-
-	var allFiles = loadDB()
-
-	if options.printDatabase {
-		fmt.Println("Daabase")
-		fileString, _ := json.MarshalIndent(allFiles, "", "  ")
-		fmt.Println(string(fileString))
-		os.Exit(0)
-	}
 
 	var files = refreshLastPicked(allFiles, getFilesFromFolders(options.folders))
 	files = pickFiles(files)
