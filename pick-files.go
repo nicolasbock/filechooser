@@ -103,7 +103,7 @@ var options = ProgramOptions{
 
 // printUsage prints program usage.
 func printUsage() {
-	fmt.Fprintf(os.Stderr, "Usage of %s:\n", path.Base(os.Args[0]))
+	fmt.Fprintf(os.Stderr, "Usage of %s-%s:\n", path.Base(os.Args[0]), Version)
 	fmt.Fprintf(os.Stderr, `
 # Introduction
 
@@ -406,6 +406,7 @@ func main() {
 
 	initializeLogging()
 
+	log.Info().Msgf("%s-%s", path.Base(os.Args[0]), Version)
 	log.Info().Msgf("Will pick %d file(s) randomly matching suffixes %s", options.n, options.suffixes.String())
 	log.Info().Msgf("Source folders: %s", options.folders.String())
 	log.Info().Msgf("The selected files will go into the '%s' folder", options.output)
