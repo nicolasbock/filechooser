@@ -8,15 +8,9 @@
 
 |br|
 
-.. image:: https://github.com/nicolasbock/filechooser/actions/workflows/python-package.yaml/badge.svg
-    :target: https://github.com/nicolasbock/filechooser/actions/workflows/python-package.yaml
-    :alt: Build and test Python package
-
 .. image:: https://github.com/nicolasbock/filechooser/actions/workflows/go-package.yaml/badge.svg
     :target: https://github.com/nicolasbock/filechooser/actions/workflows/go-package.yaml
     :alt: Build and test Go code
-
-|br|
 
 .. image:: https://github.com/nicolasbock/filechooser/actions/workflows/snap-package.yaml/badge.svg
     :target: https://github.com/nicolasbock/filechooser/actions/workflows/snap-package.yaml
