@@ -94,6 +94,7 @@ type ProgramOptions struct {
 	printVersion    bool
 	suffixes        Suffixes
 	dbExpirationAge time.Duration
+	printDatabase   bool
 }
 
 var options = ProgramOptions{
@@ -137,6 +138,7 @@ func parseCommandline() {
 		"jpeg files you would specify either 'jpg' or '.jpg'. By default, all files are considered.")
 	gnuflag.BoolVar(&options.helpRequested, "h", false, "This help message.")
 	gnuflag.BoolVar(&options.helpRequested, "help", false, "This help message.")
+	gnuflag.BoolVar(&options.printDatabase, "print-database", false, "Print the internal database and exit.")
 	gnuflag.Parse(true)
 
 	if options.helpRequested {
@@ -409,6 +411,14 @@ func main() {
 	log.Info().Msgf("The selected files will go into the '%s' folder", options.output)
 
 	var allFiles = loadDB()
+
+	if options.printDatabase {
+		fmt.Println("Daabase")
+		fileString, _ := json.MarshalIndent(allFiles, "", "  ")
+		fmt.Println(string(fileString))
+		os.Exit(0)
+	}
+
 	var files = refreshLastPicked(allFiles, getFilesFromFolders(options.folders))
 	files = pickFiles(files)
 	allFiles = mergeFiles(allFiles, files)
