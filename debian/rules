@@ -6,8 +6,5 @@ export DH_GOPKG := github.com/nicolasbock/pick-files
 %:
 	dh $@ --buildsystem=golang --with=golang
 
-#override_dh_auto_install:
-#	dh_auto_install -- prefix=/usr
-
-#override_dh_install:
-#	dh_install --list-missing -X.pyc -X.pyo
+override_dh_auto_install:
+	dh_auto_install -- --no-source
