@@ -116,6 +116,7 @@ func (f *DumpFormat) Set(s string) error {
 
 type ProgramOptions struct {
 	debugRequested      bool
+	verboseRequested    bool
 	deleteExisting      bool
 	dryRun              bool
 	folders             Folders
@@ -156,6 +157,7 @@ Would choose at random 20 files from folder1 and folder2 (including sub-folders)
 func parseCommandline() {
 	gnuflag.Usage = printUsage
 	gnuflag.BoolVar(&options.debugRequested, "debug", false, "Debug output.")
+	gnuflag.BoolVar(&options.verboseRequested, "verbose", false, "Verbose output.")
 	gnuflag.BoolVar(&options.deleteExisting, "delete-existing", false, "Delete existing files in the "+
 		"destination folder instead of moving those files to a new location.")
 	gnuflag.BoolVar(&options.dryRun, "dry-run", false, "If set then the chosen files are only shown and not copied.")
@@ -287,6 +289,8 @@ func pickFiles(allFiles Files) Files {
 		allFileIndices = allFileIndices[:len(allFileIndices)-1]
 	}
 
+	log.Debug().Msgf("considered %d files and chose %d", len(allFiles), options.n)
+
 	if !options.dryRun {
 		// Update timestamp of chosen files.
 		for _, file := range pickedFileIndices {
@@ -309,6 +313,8 @@ func pickFiles(allFiles Files) Files {
 				log.Fatal().Msgf("error copying %s to %s (%s)", allFiles[file].Path, options.output, err.Error())
 			}
 		}
+	} else {
+		log.Info().Msg("dry-run, skipping copying of files")
 	}
 	return allFiles
 }
@@ -328,7 +334,7 @@ func loadDB() Files {
 	var result = newDB()
 	_, err := os.Stat(getDBPath())
 	if err != nil {
-		log.Info().Msgf("Could not find old database at %s", getDBPath())
+		log.Info().Msgf("Could not find old database at %s, will create new one", getDBPath())
 		return Files{}
 	}
 	encoded, err := os.ReadFile(getDBPath())
@@ -412,7 +418,8 @@ func mergeFiles(a, b Files) Files {
 func initializeLogging() {
 	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
 	zerolog.SetGlobalLevel(zerolog.InfoLevel)
-	if options.debugRequested {
+	if options.debugRequested || options.verboseRequested {
+		log.Info().Msg("setting log to debug")
 		zerolog.SetGlobalLevel(zerolog.DebugLevel)
 	}
 	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
@@ -428,23 +435,22 @@ func expireOldDBEntries(files Files, maxAge time.Duration) Files {
 		if now.Sub(file.LastSeen) < maxAge {
 			result = append(result, file)
 		} else {
-			log.Debug().Msgf("Expiring %s", file)
+			log.Debug().Msgf("expiring %s", file)
 		}
 	}
 	return result
 }
 
 func main() {
-	initializeLogging()
-
 	parseCommandline()
+	initializeLogging()
 
 	var allFiles = loadDB()
 
 	if options.printDatabase {
 		var fileString []byte
 		if len(allFiles) == 0 {
-			log.Info().Msg("Databse empty")
+			log.Info().Msg("Database empty")
 			os.Exit(0)
 		}
 		switch options.printDatabaseFormat {
@@ -472,13 +478,15 @@ func main() {
 	}
 
 	log.Info().Msgf("%s-%s", path.Base(os.Args[0]), Version)
-	log.Info().Msgf("Will pick %d file(s) randomly matching suffixes %s", options.n, options.suffixes.String())
-	log.Info().Msgf("Source folders: %s", options.folders.String())
-	log.Info().Msgf("The selected files will go into the '%s' folder", options.output)
+	log.Info().Msgf("will pick %d file(s) randomly matching suffixes %s", options.n, options.suffixes.String())
+	log.Info().Msgf("source folders: %s", options.folders.String())
+	log.Info().Msgf("selected files will go into the '%s' folder", options.output)
 
 	var files = refreshLastPicked(allFiles, getFilesFromFolders(options.folders))
 	files = pickFiles(files)
 	allFiles = mergeFiles(allFiles, files)
 	allFiles = expireOldDBEntries(allFiles, options.dbExpirationAge)
 	storeDB(allFiles)
+
+	log.Info().Msg("done")
 }
