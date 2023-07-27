@@ -139,7 +139,7 @@ func printUsage() {
 	fmt.Fprintf(os.Stderr, `
 # Introduction
 
-pick-files is a script that copies a random selection of files from a set of folders to a single destination folder.
+pick-files is a script that randomly selects a specific number of files from a set of folders and copies these files to a single destination folder. During repeat runs the previously selected files are excluded from the selection for a specific time period that can be specified.
 
 ## Usage Example
 
@@ -159,8 +159,8 @@ func parseCommandline() {
 	gnuflag.BoolVar(&options.deleteExisting, "delete-existing", false, "Delete existing files in the "+
 		"destination folder instead of moving those files to a new location.")
 	gnuflag.BoolVar(&options.dryRun, "dry-run", false, "If set then the chosen files are only shown and not copied.")
-	gnuflag.Var(&options.folders, "folder", "A folder PATH to consider when picking "+
-		"files; can be used multiple times.")
+	gnuflag.Var(&options.folders, "folder", "A folder PATH to consider when picking files; can be used multiple times; "+
+		"works recursively, meaning all sub-folders and their files are included in the selection.")
 	gnuflag.IntVar(&options.n, "number", 1, "The number of files to choose.")
 	gnuflag.IntVar(&options.n, "N", 1, "The number of files to choose.")
 	gnuflag.StringVar(&options.output, "destination", "output", "The output PATH for the "+
