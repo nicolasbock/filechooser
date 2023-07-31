@@ -22,10 +22,6 @@
 
 |br|
 
-.. image:: https://badge.fury.io/py/filechooser.svg
-    :target: https://badge.fury.io/py/filechooser
-    :alt: Python Package
-
 .. image:: https://readthedocs.org/projects/filechooser/badge/?version=latest
     :target: https://filechooser.readthedocs.io/en/latest/?badge=latest
     :alt: Documentation Status
