@@ -20,6 +20,11 @@ apps:
     plugs:
       - home
       - removable-media
+  autorotate:
+    command: usr/bin/autorotate.sh
+    plugs:
+      - home
+      - removable-media
 
 parts:
   pick-files:
@@ -31,5 +36,6 @@ parts:
       set -e -u -x
       VERSION=$(git describe --tags)
       craftctl set version=${VERSION}
-      go build -ldflags "-X main.Version=${VERSION}" -o pick-files ./...
+      make
       install --mode 0755 -D pick-files ${CRAFT_PART_INSTALL}/usr/bin/pick-files
+      install --mode 0755 -D scripts/autorotate.sh ${CRAFT_PART_INSTALL}/usr/bin/autorotate.sh
