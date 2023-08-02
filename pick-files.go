@@ -115,19 +115,19 @@ func (f *DumpFormat) Set(s string) error {
 }
 
 type ProgramOptions struct {
+	dbExpirationAge     time.Duration
 	debugRequested      bool
-	verboseRequested    bool
 	deleteExisting      bool
+	destination         string
 	dryRun              bool
 	folders             Folders
 	helpRequested       bool
-	n                   int
-	output              string
-	printVersion        bool
-	suffixes            Suffixes
-	dbExpirationAge     time.Duration
+	numberOfFiles       int
 	printDatabase       bool
 	printDatabaseFormat DumpFormat
+	printVersion        bool
+	suffixes            Suffixes
+	verboseRequested    bool
 }
 
 var options = ProgramOptions{
@@ -163,9 +163,9 @@ func parseCommandline() {
 	gnuflag.BoolVar(&options.dryRun, "dry-run", false, "If set then the chosen files are only shown and not copied.")
 	gnuflag.Var(&options.folders, "folder", "A folder PATH to consider when picking files; can be used multiple times; "+
 		"works recursively, meaning all sub-folders and their files are included in the selection.")
-	gnuflag.IntVar(&options.n, "number", 1, "The number of files to choose.")
-	gnuflag.IntVar(&options.n, "N", 1, "The number of files to choose.")
-	gnuflag.StringVar(&options.output, "destination", "output", "The output PATH for the "+
+	gnuflag.IntVar(&options.numberOfFiles, "number", 1, "The number of files to choose.")
+	gnuflag.IntVar(&options.numberOfFiles, "N", 1, "The number of files to choose.")
+	gnuflag.StringVar(&options.destination, "destination", "output", "The output PATH for the "+
 		"selected files.")
 	gnuflag.BoolVar(&options.printVersion, "version", false, "Print the version of this program.")
 	gnuflag.Var(&options.suffixes, "suffix", "Only consider files with this SUFFIX. For instance, to only load "+
@@ -197,7 +197,6 @@ func getFilesFromFolders(folders []string) Files {
 		dirEntries, err := os.ReadDir(folder)
 		if err != nil {
 			log.Fatal().Msg(err.Error())
-			return Files{}
 		}
 		for _, entry := range dirEntries {
 			if entry.IsDir() {
@@ -278,7 +277,7 @@ func pickFiles(allFiles Files) Files {
 		}
 	}
 
-	for i := 0; i < options.n; i++ {
+	for i := 0; i < options.numberOfFiles; i++ {
 		if len(allFileIndices) == 0 {
 			log.Warn().Msg("Could not find any files")
 			return allFiles
@@ -289,7 +288,7 @@ func pickFiles(allFiles Files) Files {
 		allFileIndices = allFileIndices[:len(allFileIndices)-1]
 	}
 
-	log.Debug().Msgf("considered %d files and chose %d", len(allFiles), options.n)
+	log.Debug().Msgf("considered %d files and chose %d", len(allFiles), options.numberOfFiles)
 
 	if !options.dryRun {
 		// Update timestamp of chosen files.
@@ -298,19 +297,34 @@ func pickFiles(allFiles Files) Files {
 			log.Debug().Msgf("Selected %s", allFiles[file])
 		}
 
-		_, err := os.Stat(options.output)
+		_, err := os.Stat(options.destination)
 		if err == nil {
-			log.Fatal().Msg("destination folder already exists, aborting")
+			if options.deleteExisting {
+				log.Info().Msgf("deleting files in destination folder %s", options.destination)
+				dirEntries, err := os.ReadDir(options.destination)
+				if err != nil {
+					log.Fatal().Msg("unable to read destination folder")
+				}
+				for _, entry := range dirEntries {
+					log.Debug().Msgf("removing %s", path.Join(options.destination, entry.Name()))
+					err = os.Remove(path.Join(options.destination, entry.Name()))
+					if err != nil {
+						log.Fatal().Msgf("cannot remove %s: %s", entry.Name(), err.Error())
+					}
+				}
+			} else {
+				log.Fatal().Msg("destination folder already exists, aborting")
+			}
 		}
-		err = os.MkdirAll(options.output, os.ModePerm)
+		err = os.MkdirAll(options.destination, os.ModePerm)
 		if err != nil {
-			log.Fatal().Msgf("error creating destination folder %s: %s", options.output, err.Error())
+			log.Fatal().Msgf("error creating destination folder %s: %s", options.destination, err.Error())
 		}
 		for _, file := range pickedFileIndices {
 			log.Debug().Msgf("copying %s", allFiles[file])
-			_, err := copyFile(allFiles[file].Path, options.output+"/"+allFiles[file].Name)
+			_, err := copyFile(allFiles[file].Path, options.destination+"/"+allFiles[file].Name)
 			if err != nil {
-				log.Fatal().Msgf("error copying %s to %s (%s)", allFiles[file].Path, options.output, err.Error())
+				log.Fatal().Msgf("error copying %s to %s (%s)", allFiles[file].Path, options.destination, err.Error())
 			}
 		}
 	} else {
@@ -478,9 +492,9 @@ func main() {
 	}
 
 	log.Info().Msgf("%s-%s", path.Base(os.Args[0]), Version)
-	log.Info().Msgf("will pick %d file(s) randomly matching suffixes %s", options.n, options.suffixes.String())
+	log.Info().Msgf("will pick %d file(s) randomly matching suffixes %s", options.numberOfFiles, options.suffixes.String())
 	log.Info().Msgf("source folders: %s", options.folders.String())
-	log.Info().Msgf("selected files will go into the '%s' folder", options.output)
+	log.Info().Msgf("selected files will go into the '%s' folder", options.destination)
 
 	var files = refreshLastPicked(allFiles, getFilesFromFolders(options.folders))
 	files = pickFiles(files)
