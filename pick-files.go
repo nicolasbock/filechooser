@@ -18,6 +18,7 @@ import (
 	"github.com/juju/gnuflag"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
+	"gopkg.in/yaml.v3"
 )
 
 var Version = "unknown"
@@ -90,24 +91,29 @@ type DumpFormat int
 const (
 	CSV DumpFormat = iota
 	JSON
+	YAML
 )
 
 func (f *DumpFormat) String() string {
 	switch *f {
-	case JSON:
-		return "JSON"
 	case CSV:
 		return "CSV"
+	case JSON:
+		return "JSON"
+	case YAML:
+		return "YAML"
 	}
 	return "unknown"
 }
 
 func (f *DumpFormat) Set(s string) error {
 	switch s {
-	case "JSON":
-		*f = JSON
 	case "CSV":
 		*f = CSV
+	case "JSON":
+		*f = JSON
+	case "YAML":
+		*f = YAML
 	default:
 		log.Fatal().Msgf("Unknown database dumpt format '%s'", s)
 	}
@@ -175,7 +181,7 @@ func parseCommandline() {
 	gnuflag.BoolVar(&options.helpRequested, "h", false, "This help message.")
 	gnuflag.BoolVar(&options.helpRequested, "help", false, "This help message.")
 	gnuflag.BoolVar(&options.printDatabase, "print-database", false, "Print the internal database and exit.")
-	gnuflag.Var(&options.printDatabaseFormat, "print-database-format", "Format of printed database; possible options are CSV and JSON.")
+	gnuflag.Var(&options.printDatabaseFormat, "print-database-format", "Format of printed database; possible options are CSV, JSON, and YAML.")
 	gnuflag.Parse(true)
 
 	if options.helpRequested {
@@ -475,8 +481,6 @@ func main() {
 			os.Exit(0)
 		}
 		switch options.printDatabaseFormat {
-		case JSON:
-			fileString, _ = json.MarshalIndent(allFiles, "", "  ")
 		case CSV:
 			b := new(bytes.Buffer)
 			csvWriter := csv.NewWriter(b)
@@ -493,6 +497,10 @@ func main() {
 			}
 			csvWriter.Flush()
 			fileString = b.Bytes()
+		case JSON:
+			fileString, _ = json.MarshalIndent(allFiles, "", "  ")
+		case YAML:
+			fileString, _ = yaml.Marshal(allFiles)
 		}
 		fmt.Println(string(fileString))
 		os.Exit(0)
