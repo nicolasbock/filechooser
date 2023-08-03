@@ -115,6 +115,7 @@ func (f *DumpFormat) Set(s string) error {
 }
 
 type ProgramOptions struct {
+	appendFiles         bool
 	dbExpirationAge     time.Duration
 	debugRequested      bool
 	deleteExisting      bool
@@ -160,6 +161,7 @@ func parseCommandline() {
 	gnuflag.BoolVar(&options.verboseRequested, "verbose", false, "Verbose output.")
 	gnuflag.BoolVar(&options.deleteExisting, "delete-existing", false, "Delete existing files in the "+
 		"destination folder instead of moving those files to a new location.")
+	gnuflag.BoolVar(&options.appendFiles, "append", false, "Append chosen files to existing destination folder.")
 	gnuflag.BoolVar(&options.dryRun, "dry-run", false, "If set then the chosen files are only shown and not copied.")
 	gnuflag.Var(&options.folders, "folder", "A folder PATH to consider when picking files; can be used multiple times; "+
 		"works recursively, meaning all sub-folders and their files are included in the selection.")
@@ -186,6 +188,9 @@ func parseCommandline() {
 	}
 	if len(options.folders) == 0 {
 		options.folders = append(options.folders, ".")
+	}
+	if options.appendFiles && options.deleteExisting {
+		log.Warn().Msg("I will delete the existing destination, ignoring the append option")
 	}
 }
 
@@ -312,6 +317,8 @@ func pickFiles(allFiles Files) Files {
 						log.Fatal().Msgf("cannot remove %s: %s", entry.Name(), err.Error())
 					}
 				}
+			} else if options.appendFiles {
+				log.Debug().Msg("appending files to existing destination")
 			} else {
 				log.Fatal().Msg("destination folder already exists, aborting")
 			}
