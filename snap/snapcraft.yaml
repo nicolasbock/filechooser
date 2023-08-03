@@ -17,11 +17,13 @@ confinement: strict
 apps:
   pick-files:
     command: usr/bin/pick-files
+    completer: usr/share/pick-files/pick-files-bash-completions.sh
     plugs:
       - home
       - removable-media
   autorotate:
     command: usr/bin/autorotate.sh
+    completer: usr/share/pick-files/autorotate-bash-completions.sh
     plugs:
       - home
       - removable-media
@@ -39,3 +41,5 @@ parts:
       make
       install --mode 0755 -D pick-files ${CRAFT_PART_INSTALL}/usr/bin/pick-files
       install --mode 0755 -D scripts/autorotate.sh ${CRAFT_PART_INSTALL}/usr/bin/autorotate.sh
+      install --mode 0755 -D scripts/pick-files-bash-completions.sh ${CRAFT_PART_INSTALL}/usr/share/pick-files/pick-files-bash-completions.sh
+      install --mode 0755 -D scripts/pick-files-bash-completions.sh ${CRAFT_PART_INSTALL}/usr/share/pick-files/autorotate-bash-completions.sh
