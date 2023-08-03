@@ -23,7 +23,7 @@ _complete_pick_files () {
       return
       ;;
     --print-database-format)
-      readarray -t COMPREPLY < <(compgen -W 'CSV JSON' -- "$cur")
+      readarray -t COMPREPLY < <(compgen -W 'CSV JSON YAML' -- "$cur")
       return
       ;;
   esac
