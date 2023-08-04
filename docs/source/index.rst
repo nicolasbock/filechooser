@@ -7,7 +7,7 @@ Welcome to filechooser's documentation!
 
    design_goals
 
-.. include:: ../README.rst
+.. include:: ../../README.rst
 
 Indices and tables
 ------------------
