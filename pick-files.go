@@ -194,9 +194,6 @@ func parseCommandline() {
 		fmt.Printf("Version: %s\n", Version)
 		os.Exit(0)
 	}
-	if len(options.folders) == 0 {
-		options.folders = append(options.folders, ".")
-	}
 	if options.appendFiles && options.deleteExisting {
 		log.Warn().Msg("I will delete the existing destination, ignoring the append option")
 	}
@@ -524,6 +521,10 @@ func main() {
 		}
 		fmt.Println(string(fileString))
 		os.Exit(0)
+	}
+
+	if len(options.folders) == 0 {
+    log.Fatal().Msg("No folders were specified. Use the --folder option.")
 	}
 
 	log.Info().Msgf("%s-%s", path.Base(os.Args[0]), Version)
