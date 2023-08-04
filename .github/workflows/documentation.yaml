@@ -27,9 +27,9 @@ jobs:
         python -m pip install tox
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
     - name: Build docs
-      run: tox -e docs
+      run: ./scripts/build-documentation.sh doc-build
     - name: Store docs
       uses: actions/upload-artifact@v3
       with:
         name: webpage
-        path: docs/_build
+        path: doc-build/build/html
