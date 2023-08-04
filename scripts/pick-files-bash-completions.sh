@@ -2,6 +2,7 @@ _complete_pick_files () {
   local cur prev
   local known_options=(
     -N --number
+    --block-selection
     --debug
     --delete-existing
     --destination

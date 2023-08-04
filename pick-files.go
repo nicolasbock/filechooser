@@ -121,21 +121,23 @@ func (f *DumpFormat) Set(s string) error {
 }
 
 type ProgramOptions struct {
-	appendFiles         bool
-	dbExpirationAge     time.Duration
-	debugRequested      bool
-	deleteExisting      bool
-	destination         string
-	dryRun              bool
-	folders             Folders
-	helpRequested       bool
-	numberOfFiles       int
-	printDatabase       bool
-	printDatabaseFormat DumpFormat
-	printVersion        bool
-	resetDatabase       bool
-	suffixes            Suffixes
-	verboseRequested    bool
+	appendFiles            bool
+	blockSelectionDuration time.Duration
+	blockSelectionString   string
+	dbExpirationAge        time.Duration
+	debugRequested         bool
+	deleteExisting         bool
+	destination            string
+	dryRun                 bool
+	folders                Folders
+	helpRequested          bool
+	numberOfFiles          int
+	printDatabase          bool
+	printDatabaseFormat    DumpFormat
+	printVersion           bool
+	resetDatabase          bool
+	suffixes               Suffixes
+	verboseRequested       bool
 }
 
 var options = ProgramOptions{
@@ -184,6 +186,8 @@ func parseCommandline() {
 	gnuflag.BoolVar(&options.resetDatabase, "reset-database", false, "Reset the database (re-initialize). Use intended for testing only.")
 	gnuflag.BoolVar(&options.printDatabase, "print-database", false, "Print the internal database and exit.")
 	gnuflag.Var(&options.printDatabaseFormat, "print-database-format", "Format of printed database; possible options are CSV, JSON, and YAML.")
+	gnuflag.StringVar(&options.blockSelectionString, "block-selection", "", "Block selection of files for a certain "+
+		"period. Possible units are (s)econds, (m)inutes, and (h)ours.")
 	gnuflag.Parse(true)
 
 	if options.helpRequested {
@@ -199,6 +203,14 @@ func parseCommandline() {
 	}
 	if options.appendFiles && options.deleteExisting {
 		log.Warn().Msg("I will delete the existing destination, ignoring the append option")
+	}
+	if options.blockSelectionString != "" {
+		var err error
+		options.blockSelectionDuration, err = time.ParseDuration(options.blockSelectionString)
+		if err != nil {
+			log.Fatal().Msgf("Error parsing duration %s", options.blockSelectionString)
+		}
+		options.blockSelectionDuration = options.blockSelectionDuration.Abs()
 	}
 }
 
@@ -284,15 +296,23 @@ func pickFiles(allFiles Files) Files {
 	}
 	var re = regexp.MustCompile(suffixRegex)
 
+	// Downselect based on suffix and block selection Duration.
 	for i := 0; i < len(allFiles); i++ {
 		if re.MatchString(allFiles[i].Path) {
+			if options.blockSelectionDuration.Seconds() > 0 {
+				if time.Since(allFiles[i].LastPicked) < options.blockSelectionDuration {
+					log.Debug().Msgf("%s was just recently picked (%s ago); skipping",
+						allFiles[i].Path, time.Since(allFiles[i].LastPicked).Round(time.Second).String())
+					continue
+				}
+			}
 			allFileIndices = append(allFileIndices, i)
 		}
 	}
 
 	for i := 0; i < options.numberOfFiles; i++ {
 		if len(allFileIndices) == 0 {
-			log.Warn().Msg("Could not find any files")
+			log.Warn().Msg("could not find any files")
 			return allFiles
 		}
 		j := rand.Intn(len(allFileIndices))
@@ -306,8 +326,8 @@ func pickFiles(allFiles Files) Files {
 	if !options.dryRun {
 		// Update timestamp of chosen files.
 		for _, file := range pickedFileIndices {
+			log.Debug().Msgf("selected %s", allFiles[file])
 			allFiles[file].LastPicked = time.Now().UTC()
-			log.Debug().Msgf("Selected %s", allFiles[file])
 		}
 
 		_, err := os.Stat(options.destination)
@@ -462,11 +482,14 @@ func mergeFiles(a, b Files) Files {
 func initializeLogging() {
 	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
 	zerolog.SetGlobalLevel(zerolog.InfoLevel)
+	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
+}
+
+func adjustLogLevel() {
 	if options.debugRequested || options.verboseRequested {
 		log.Info().Msg("setting log to debug")
 		zerolog.SetGlobalLevel(zerolog.DebugLevel)
 	}
-	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
 }
 
 // expireOldDBEntries returns a Files object in which all Files have a LastSeen
@@ -486,8 +509,9 @@ func expireOldDBEntries(files Files, maxAge time.Duration) Files {
 }
 
 func main() {
-	parseCommandline()
 	initializeLogging()
+	parseCommandline()
+	adjustLogLevel()
 
 	if options.resetDatabase {
 		createDB(true)
@@ -528,6 +552,9 @@ func main() {
 
 	log.Info().Msgf("%s-%s", path.Base(os.Args[0]), Version)
 	log.Info().Msgf("will pick %d file(s) randomly matching suffixes %s", options.numberOfFiles, options.suffixes.String())
+	if options.blockSelectionDuration > 0 {
+		log.Info().Msgf("will block files last picked less than %s ago", options.blockSelectionDuration.String())
+	}
 	log.Info().Msgf("source folders: %s", options.folders.String())
 	log.Info().Msgf("selected files will go into the '%s' folder", options.destination)
 
