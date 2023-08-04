@@ -133,6 +133,7 @@ type ProgramOptions struct {
 	printDatabase       bool
 	printDatabaseFormat DumpFormat
 	printVersion        bool
+	resetDatabase       bool
 	suffixes            Suffixes
 	verboseRequested    bool
 }
@@ -180,6 +181,7 @@ func parseCommandline() {
 		"jpeg files you would specify either 'jpg' or '.jpg'. By default, all files are considered.")
 	gnuflag.BoolVar(&options.helpRequested, "h", false, "This help message.")
 	gnuflag.BoolVar(&options.helpRequested, "help", false, "This help message.")
+	gnuflag.BoolVar(&options.resetDatabase, "reset-database", false, "Reset the database (re-initialize). Use intended for testing only.")
 	gnuflag.BoolVar(&options.printDatabase, "print-database", false, "Print the internal database and exit.")
 	gnuflag.Var(&options.printDatabaseFormat, "print-database-format", "Format of printed database; possible options are CSV, JSON, and YAML.")
 	gnuflag.Parse(true)
@@ -356,12 +358,27 @@ func getDBPath() string {
 	return fullDBFilename
 }
 
+// createDB creates a new database. If `force` is true then reset an existing
+// database.
+func createDB(force bool) {
+	_, err := os.Stat(getDBPath())
+	if err != nil {
+		return
+	}
+	if force {
+		log.Info().Msg("resetting database")
+		os.Remove(getDBPath())
+	} else {
+		log.Fatal().Msg("Database already exists")
+	}
+}
+
 // loadDB loads file information from a previous run.
 func loadDB() Files {
 	var result = newDB()
 	_, err := os.Stat(getDBPath())
 	if err != nil {
-		log.Info().Msgf("Could not find old database at %s, will create new one", getDBPath())
+		log.Info().Msgf("could not find old database at %s, will create new one", getDBPath())
 		return Files{}
 	}
 	encoded, err := os.ReadFile(getDBPath())
@@ -472,6 +489,9 @@ func main() {
 	parseCommandline()
 	initializeLogging()
 
+	if options.resetDatabase {
+		createDB(true)
+	}
 	var allFiles = loadDB()
 
 	if options.printDatabase {

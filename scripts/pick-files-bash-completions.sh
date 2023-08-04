@@ -10,6 +10,7 @@ _complete_pick_files () {
     -h --help
     --print-database
     --print-database-format
+    --reset-database
     --suffix
     --verbose
     --version
