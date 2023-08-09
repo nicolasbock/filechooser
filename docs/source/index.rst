@@ -10,10 +10,3 @@ Welcome to filechooser's documentation!
    design_goals
 
 .. include:: ../../README.rst
-
-Indices and tables
-------------------
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
