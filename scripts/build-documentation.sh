@@ -10,4 +10,5 @@ ${builddir}/doc-venv/bin/pip install --upgrade pip
 ${builddir}/doc-venv/bin/pip install sphinx sphinx_rtd_theme
 
 cd ${basedir}/../docs
-${builddir}/doc-venv/bin/sphinx-build -M html source ${builddir}/build
+${builddir}/doc-venv/bin/sphinx-build -b html source ${builddir}/build
+${builddir}/doc-venv/bin/sphinx-build -b linkcheck source ${builddir}/build
