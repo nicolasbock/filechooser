@@ -73,8 +73,8 @@ func newDB() db {
 }
 
 func (f File) String() string {
-	return fmt.Sprintf("{name: \"%s\", path: \"%s\", lastPicked: %s, md5sum: \"%s\"}",
-		f.Name, f.Path, f.LastPicked, f.Md5sum)
+	return fmt.Sprintf("{name: \"%s\", path: \"%s\", lastSeen: %s, lastPicked: %s, md5sum: \"%s\"}",
+		f.Name, f.Path, f.LastSeen, f.LastPicked, f.Md5sum)
 }
 
 func (fs Files) String() string {
