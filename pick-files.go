@@ -304,7 +304,9 @@ func pickFiles(allFiles Files) Files {
 				}
 			}
 			allFileIndices = append(allFileIndices, i)
-		}
+		} else {
+		  log.Debug().Msgf("%s has the wrong suffix; skipping", allFiles[i].Path)
+    }
 	}
 
 	for i := 0; i < options.numberOfFiles; i++ {
