@@ -77,3 +77,23 @@ func TestMergeFiles(t *testing.T) {
 		t.Errorf("Expected %s but got %s", expectedFiles, mergedFiles)
 	}
 }
+
+func TestRefreshLastPicked(t *testing.T) {
+	var now time.Time = time.Now()
+	var oldFiles Files = Files{
+		File{Name: "a", Md5sum: "a", LastSeen: now, LastPicked: now},
+		File{Name: "b", Md5sum: "b", LastSeen: now.Add(-time.Hour), LastPicked: now},
+	}
+	var newFiles Files = Files{
+		File{Name: "a", Md5sum: "a", LastSeen: now, LastPicked: now},
+		File{Name: "b", Md5sum: "b", LastSeen: now, LastPicked: now},
+	}
+	var expectedFiles Files = Files{
+		File{Name: "a", Md5sum: "a", LastSeen: now, LastPicked: now},
+		File{Name: "b", Md5sum: "b", LastSeen: now, LastPicked: now},
+	}
+	var files Files = refreshLastPicked(oldFiles, newFiles)
+	if !compareFileList(expectedFiles, files) {
+		t.Errorf("Expected %s but got %s", expectedFiles, files)
+	}
+}
