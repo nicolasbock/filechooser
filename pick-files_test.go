@@ -51,3 +51,29 @@ func TestExpireOldDBEntries(t *testing.T) {
 		t.Errorf("Got %s, Expected %s", files, expectedFiles)
 	}
 }
+
+func TestMergeFiles(t *testing.T) {
+	var now time.Time = time.Now()
+	var a Files = Files{
+		File{Name: "a", Md5sum: "a",LastSeen: now.Add(-time.Hour)},
+		File{Name: "b", Md5sum: "b",LastSeen: now.Add(-time.Hour)},
+		File{Name: "c", Md5sum: "c",LastSeen: now.Add(-time.Hour), LastPicked: now.Add(-time.Hour)},
+		File{Name: "d", Md5sum: "d",LastSeen: now.Add(-time.Hour), LastPicked: now.Add(-time.Hour)},
+	}
+	var b Files = Files{
+		File{Name: "a", Md5sum: "a", LastSeen: now},
+		File{Name: "b", Md5sum: "b",LastSeen: now.Add(-time.Hour)},
+		File{Name: "c", Md5sum: "c",LastSeen: now.Add(-time.Hour), LastPicked: now.Add(-time.Hour)},
+		File{Name: "d", Md5sum: "d",LastSeen: now.Add(-time.Hour), LastPicked: now},
+	}
+	var expectedFiles = Files{
+		File{Name: "a", Md5sum: "a", LastSeen: now},
+		File{Name: "b", Md5sum: "b",LastSeen: now.Add(-time.Hour)},
+		File{Name: "c", Md5sum: "c",LastSeen: now.Add(-time.Hour), LastPicked: now.Add(-time.Hour)},
+		File{Name: "d", Md5sum: "d",LastSeen: now.Add(-time.Hour), LastPicked: now},
+	}
+	var mergedFiles Files = mergeFiles(a, b)
+	if !compareFileList(expectedFiles, mergedFiles) {
+		t.Errorf("Expected %s but got %s", expectedFiles, mergedFiles)
+	}
+}
