@@ -55,22 +55,22 @@ func TestExpireOldDBEntries(t *testing.T) {
 func TestMergeFiles(t *testing.T) {
 	var now time.Time = time.Now()
 	var a Files = Files{
-		File{Name: "a", Md5sum: "a",LastSeen: now.Add(-time.Hour)},
-		File{Name: "b", Md5sum: "b",LastSeen: now.Add(-time.Hour)},
-		File{Name: "c", Md5sum: "c",LastSeen: now.Add(-time.Hour), LastPicked: now.Add(-time.Hour)},
-		File{Name: "d", Md5sum: "d",LastSeen: now.Add(-time.Hour), LastPicked: now.Add(-time.Hour)},
+		File{Name: "a", Md5sum: "a", LastSeen: now.Add(-time.Hour)},
+		File{Name: "b", Md5sum: "b", LastSeen: now.Add(-time.Hour)},
+		File{Name: "c", Md5sum: "c", LastSeen: now.Add(-time.Hour), LastPicked: now.Add(-time.Hour)},
+		File{Name: "d", Md5sum: "d", LastSeen: now.Add(-time.Hour), LastPicked: now.Add(-time.Hour)},
 	}
 	var b Files = Files{
 		File{Name: "a", Md5sum: "a", LastSeen: now},
-		File{Name: "b", Md5sum: "b",LastSeen: now.Add(-time.Hour)},
-		File{Name: "c", Md5sum: "c",LastSeen: now.Add(-time.Hour), LastPicked: now.Add(-time.Hour)},
-		File{Name: "d", Md5sum: "d",LastSeen: now.Add(-time.Hour), LastPicked: now},
+		File{Name: "b", Md5sum: "b", LastSeen: now.Add(-time.Hour)},
+		File{Name: "c", Md5sum: "c", LastSeen: now.Add(-time.Hour), LastPicked: now.Add(-time.Hour)},
+		File{Name: "d", Md5sum: "d", LastSeen: now.Add(-time.Hour), LastPicked: now},
 	}
 	var expectedFiles = Files{
 		File{Name: "a", Md5sum: "a", LastSeen: now},
-		File{Name: "b", Md5sum: "b",LastSeen: now.Add(-time.Hour)},
-		File{Name: "c", Md5sum: "c",LastSeen: now.Add(-time.Hour), LastPicked: now.Add(-time.Hour)},
-		File{Name: "d", Md5sum: "d",LastSeen: now.Add(-time.Hour), LastPicked: now},
+		File{Name: "b", Md5sum: "b", LastSeen: now.Add(-time.Hour)},
+		File{Name: "c", Md5sum: "c", LastSeen: now.Add(-time.Hour), LastPicked: now.Add(-time.Hour)},
+		File{Name: "d", Md5sum: "d", LastSeen: now.Add(-time.Hour), LastPicked: now},
 	}
 	var mergedFiles Files = mergeFiles(a, b)
 	if !compareFileList(expectedFiles, mergedFiles) {
@@ -97,3 +97,15 @@ func TestRefreshLastPicked(t *testing.T) {
 		t.Errorf("Expected %s but got %s", expectedFiles, files)
 	}
 }
+
+func TestGetFilesFromFolders(t *testing.T) {}
+
+func TestCopyFiles(t *testing.T) {}
+
+func TestPickFiles(t *testing.T) {}
+
+func TestCreateDB(t *testing.T) {}
+
+func TestLoadDB(t *testing.T) {}
+
+func TestStoreDB(t *testing.T) {}
