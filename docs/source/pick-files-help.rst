@@ -3,7 +3,7 @@ Supported Options
 
 .. code-block:: console
 
-    Usage of pick-files-1.3.1-10-g5e25d21:
+    Usage of pick-files-1.3.2-13-gb067173:
 
     # Introduction
 
@@ -19,6 +19,8 @@ Supported Options
         The number of files to choose.
     --append  (= false)
         Append chosen files to existing destination folder.
+    --block-selection (= "")
+        Block selection of files for a certain period. Possible units are (s)econds, (m)inutes, and (h)ours.
     --debug  (= false)
         Debug output.
     --delete-existing  (= false)
@@ -34,7 +36,9 @@ Supported Options
     --print-database  (= false)
         Print the internal database and exit.
     --print-database-format  (= CSV)
-        Format of printed database; possible options are CSV and JSON.
+        Format of printed database; possible options are CSV, JSON, and YAML.
+    --reset-database  (= false)
+        Reset the database (re-initialize). Use intended for testing only.
     --suffix  (= )
         Only consider files with this SUFFIX. For instance, to only load jpeg files you would specify either 'jpg' or '.jpg'. By default, all files are considered.
     --verbose  (= false)
