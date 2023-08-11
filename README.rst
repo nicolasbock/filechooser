@@ -40,8 +40,8 @@ Usage Example
     pick-files --number 20 --destination new_folder \
         --suffix .jpg --suffix .avi --folder folder1 --folder folder2
 
-For more details on all supported options, see the `Supported Options
-<pick-files-help.html>`__ page.
+For more details on all supported options, see the :doc:`Supported
+Options<pick-files-help>` page.
 
 Installation
 ------------
