@@ -12,6 +12,7 @@ import (
 	"os"
 	"path"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
 
@@ -162,6 +163,28 @@ Would choose at random 20 files from folder1 and folder2 (including sub-folders)
 	gnuflag.PrintDefaults()
 }
 
+// convertDurationString converts a string into a duration with additional
+// units.
+func convertDurationString(durationString string) time.Duration {
+	var daysRegex *regexp.Regexp = regexp.MustCompile("^([0-9]+)d$")
+	if daysRegex.MatchString(durationString) {
+		fmt.Println("parsing days")
+		dayString := daysRegex.FindStringSubmatch(durationString)
+		days, err := strconv.ParseInt(dayString[1], 10, 64)
+		fmt.Printf("got %d days\n", days)
+		if err != nil {
+			log.Fatal().Msgf("error parsing duration %s: %s", durationString, err.Error())
+		}
+		durationString = fmt.Sprintf("%dh", days*24)
+	}
+	var err error
+	duration, err := time.ParseDuration(durationString)
+	if err != nil {
+		log.Fatal().Msgf("error parsing duration %s: %s", durationString, err.Error())
+	}
+	return duration
+}
+
 // parseCommandline parses the command line arguments and stores the option
 // values.
 func parseCommandline() {
@@ -187,7 +210,7 @@ func parseCommandline() {
 	gnuflag.BoolVar(&options.printDatabase, "print-database", false, "Print the internal database and exit.")
 	gnuflag.Var(&options.printDatabaseFormat, "print-database-format", "Format of printed database; possible options are CSV, JSON, and YAML.")
 	gnuflag.StringVar(&options.blockSelectionString, "block-selection", "", "Block selection of files for a certain "+
-		"period. Possible units are (s)econds, (m)inutes, and (h)ours.")
+		"period. Possible units are (s)econds, (m)inutes, (h)ours, and (d)days.")
 	gnuflag.Parse(true)
 
 	if options.helpRequested {
@@ -202,12 +225,7 @@ func parseCommandline() {
 		log.Warn().Msg("I will delete the existing destination, ignoring the append option")
 	}
 	if options.blockSelectionString != "" {
-		var err error
-		options.blockSelectionDuration, err = time.ParseDuration(options.blockSelectionString)
-		if err != nil {
-			log.Fatal().Msgf("Error parsing duration %s", options.blockSelectionString)
-		}
-		options.blockSelectionDuration = options.blockSelectionDuration.Abs()
+		options.blockSelectionDuration = convertDurationString(options.blockSelectionString).Abs()
 	}
 }
 
@@ -305,8 +323,8 @@ func pickFiles(allFiles Files) Files {
 			}
 			allFileIndices = append(allFileIndices, i)
 		} else {
-		  log.Debug().Msgf("%s has the wrong suffix; skipping", allFiles[i].Path)
-    }
+			log.Debug().Msgf("%s has the wrong suffix; skipping", allFiles[i].Path)
+		}
 	}
 
 	for i := 0; i < options.numberOfFiles; i++ {
@@ -550,7 +568,7 @@ func main() {
 	}
 
 	if len(options.folders) == 0 {
-    log.Fatal().Msg("No folders were specified. Use the --folder option.")
+		log.Fatal().Msg("No folders were specified. Use the --folder option.")
 	}
 
 	log.Info().Msgf("%s-%s", path.Base(os.Args[0]), Version)
