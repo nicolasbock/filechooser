@@ -167,6 +167,7 @@ Would choose at random 20 files from folder1 and folder2 (including sub-folders)
 // units.
 func convertDurationString(durationString string) time.Duration {
 	var daysRegex *regexp.Regexp = regexp.MustCompile("^([0-9]+)d$")
+	var weeksRegex *regexp.Regexp = regexp.MustCompile("^([0-9]+)w$")
 	if daysRegex.MatchString(durationString) {
 		fmt.Println("parsing days")
 		dayString := daysRegex.FindStringSubmatch(durationString)
@@ -176,6 +177,16 @@ func convertDurationString(durationString string) time.Duration {
 			log.Fatal().Msgf("error parsing duration %s: %s", durationString, err.Error())
 		}
 		durationString = fmt.Sprintf("%dh", days*24)
+	}
+	if weeksRegex.MatchString(durationString) {
+		fmt.Println("parsing weeks")
+		weekString := weeksRegex.FindStringSubmatch(durationString)
+		weeks, err := strconv.ParseInt(weekString[1], 10, 64)
+		fmt.Printf("got %d weeks\n", weeks)
+		if err != nil {
+			log.Fatal().Msgf("error parsing duration %s: %s", durationString, err.Error())
+		}
+		durationString = fmt.Sprintf("%dh", weeks*24*7)
 	}
 	var err error
 	duration, err := time.ParseDuration(durationString)
@@ -210,7 +221,7 @@ func parseCommandline() {
 	gnuflag.BoolVar(&options.printDatabase, "print-database", false, "Print the internal database and exit.")
 	gnuflag.Var(&options.printDatabaseFormat, "print-database-format", "Format of printed database; possible options are CSV, JSON, and YAML.")
 	gnuflag.StringVar(&options.blockSelectionString, "block-selection", "", "Block selection of files for a certain "+
-		"period. Possible units are (s)econds, (m)inutes, (h)ours, and (d)days.")
+		"period. Possible units are (s)econds, (m)inutes, (h)ours, (d)days, and (w)weeks.")
 	gnuflag.Parse(true)
 
 	if options.helpRequested {

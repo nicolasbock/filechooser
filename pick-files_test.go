@@ -113,10 +113,10 @@ func TestStoreDB(t *testing.T) {}
 func TestConvertDurationString(t *testing.T) {
 	var duration time.Duration
 	testInput := []string{
-		"1m", "1h", "1d",
+		"1m", "1h", "1d", "1w",
 	}
 	testOutput := []time.Duration{
-		time.Minute, time.Hour, 24 * time.Hour,
+		time.Minute, time.Hour, 24 * time.Hour, 24 * 7 * time.Hour,
 	}
 	for i := range testInput {
 		duration = convertDurationString(testInput[i])
