@@ -4,9 +4,9 @@ name: Go package build and test
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [ main ]
   pull_request:
-    branches: [ main, develop ]
+    branches: [ main ]
   schedule:
     - cron: "0 0 1 * *"
   workflow_dispatch:
