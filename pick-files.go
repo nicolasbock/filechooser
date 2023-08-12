@@ -301,9 +301,7 @@ func copyFile(src, dst string) (int64, error) {
 // pickFiles randomly picks files and copies those to the destination folder.
 // The function updates the timestampes on the chosen files and returns the
 // updated list of Files.
-func pickFiles(allFiles Files) Files {
-	var pickedFileIndices = []int{}
-	var allFileIndices = []int{}
+func pickFiles(files Files) Files {
 	var suffixRegex = ".*$"
 
 	if len(options.suffixes) > 0 {
@@ -311,42 +309,53 @@ func pickFiles(allFiles Files) Files {
 	}
 	var re = regexp.MustCompile(suffixRegex)
 
-	// Downselect based on suffix and block selection Duration.
-	for i := 0; i < len(allFiles); i++ {
-		if re.MatchString(allFiles[i].Path) {
-			if options.blockSelectionDuration.Seconds() > 0 {
-				if time.Since(allFiles[i].LastPicked) < options.blockSelectionDuration {
-					log.Debug().Msgf("%s was just recently picked (%s ago); skipping",
-						allFiles[i].Path, time.Since(allFiles[i].LastPicked).Round(time.Second).String())
-					continue
-				}
+	var temp Files = files
+	var eligibleFiles Files = Files{}
+	log.Debug().Msgf("temp at %p", temp)
+	log.Debug().Msgf("eligible files at %p", eligibleFiles)
+
+	// Down-select based on suffix.
+	log.Debug().Msg("filter files by suffix")
+	for _, file := range temp {
+		if re.MatchString(file.Path) {
+			eligibleFiles = append(eligibleFiles, file)
+		}
+	}
+
+	// Down-select based on block duration.
+	if options.blockSelectionDuration > 0 {
+		log.Debug().Msg("filter files based on block selection duration")
+		temp = eligibleFiles
+		eligibleFiles = Files{}
+		for _, file := range temp {
+			if time.Since(file.LastPicked) < options.blockSelectionDuration {
+				log.Debug().Msgf("%s was just recently picked (%s ago); skipping",
+					file.Path, time.Since(file.LastPicked).Round(time.Second).String())
+				continue
 			}
-			allFileIndices = append(allFileIndices, i)
-		} else {
-			log.Debug().Msgf("%s has the wrong suffix; skipping", allFiles[i].Path)
+			eligibleFiles = append(eligibleFiles, file)
 		}
+	} else {
+		log.Debug().Msg("no block selection duration set")
 	}
 
+	log.Debug().Msgf("eligible files at %p", eligibleFiles)
+
+	var pickedFiles = Files{}
+
+	log.Debug().Msgf("considering %d files for picking", len(eligibleFiles))
 	for i := 0; i < options.numberOfFiles; i++ {
-		if len(allFileIndices) == 0 {
-			log.Warn().Msg("could not find any files")
-			return allFiles
+		if len(eligibleFiles) == 0 {
+			log.Warn().Msg("ran out of eligible files")
 		}
-		j := rand.Intn(len(allFileIndices))
-		pickedFileIndices = append(pickedFileIndices, allFileIndices[j])
-		allFileIndices[j] = allFileIndices[len(allFileIndices)-1]
-		allFileIndices = allFileIndices[:len(allFileIndices)-1]
+		j := rand.Intn(len(eligibleFiles))
+		log.Debug().Msgf("picked file %s", eligibleFiles[j])
+		pickedFiles = append(pickedFiles, eligibleFiles[j])
+		eligibleFiles = append(eligibleFiles[:j], eligibleFiles[j+1:]...)
 	}
-
-	log.Debug().Msgf("considered %d files and chose %d", len(allFiles), options.numberOfFiles)
+	log.Debug().Msgf("considered %d files and picked %d", len(files), len(pickedFiles))
 
 	if !options.dryRun {
-		// Update timestamp of chosen files.
-		for _, file := range pickedFileIndices {
-			log.Debug().Msgf("selected %s", allFiles[file])
-			allFiles[file].LastPicked = time.Now().UTC()
-		}
-
 		_, err := os.Stat(options.destination)
 		if err == nil {
 			if options.deleteExisting {
@@ -372,17 +381,18 @@ func pickFiles(allFiles Files) Files {
 		if err != nil {
 			log.Fatal().Msgf("error creating destination folder %s: %s", options.destination, err.Error())
 		}
-		for _, file := range pickedFileIndices {
-			log.Debug().Msgf("copying %s", allFiles[file])
-			_, err := copyFile(allFiles[file].Path, options.destination+"/"+allFiles[file].Name)
+		for _, file := range pickedFiles {
+			log.Debug().Msgf("copying %s", file)
+			_, err := copyFile(file.Path, options.destination+"/"+file.Name)
 			if err != nil {
-				log.Fatal().Msgf("error copying %s to %s (%s)", allFiles[file].Path, options.destination, err.Error())
+				log.Fatal().Msgf("error copying %s to %s (%s)", file.Path, options.destination, err.Error())
 			}
+			file.LastPicked = time.Now().UTC()
 		}
 	} else {
 		log.Info().Msg("dry-run, skipping copying of files")
 	}
-	return allFiles
+	return files
 }
 
 // getDBPath returns the full path to the database file.
@@ -580,7 +590,9 @@ func main() {
 	log.Info().Msgf("selected files will go into the '%s' folder", options.destination)
 
 	var files = refreshLastPicked(allFiles, getFilesFromFolders(options.folders))
+	log.Debug().Msgf("before calling pickFiles: files at %p", files)
 	files = pickFiles(files)
+	log.Debug().Msgf("after calling pickFiles: files at %p", files)
 	allFiles = mergeFiles(allFiles, files)
 	allFiles = expireOldDBEntries(allFiles, options.dbExpirationAge)
 	storeDB(allFiles)
