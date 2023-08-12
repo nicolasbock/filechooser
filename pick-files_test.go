@@ -109,3 +109,19 @@ func TestCreateDB(t *testing.T) {}
 func TestLoadDB(t *testing.T) {}
 
 func TestStoreDB(t *testing.T) {}
+
+func TestConvertDurationString(t *testing.T) {
+	var duration time.Duration
+	testInput := []string{
+		"1m", "1h", "1d",
+	}
+	testOutput := []time.Duration{
+		time.Minute, time.Hour, 24 * time.Hour,
+	}
+	for i := range testInput {
+		duration = convertDurationString(testInput[i])
+		if duration != testOutput[i] {
+			t.Errorf("expected %s but got %s", testOutput[i], duration)
+		}
+	}
+}
