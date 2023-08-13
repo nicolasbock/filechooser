@@ -240,9 +240,9 @@ func getFilesFromFolders(folders []string) Files {
 		}
 		for _, entry := range dirEntries {
 			if entry.IsDir() {
-				files = append(files, getFilesFromFolders([]string{folder + "/" + entry.Name()})...)
+				files = append(files, getFilesFromFolders([]string{path.Join(folder, entry.Name())})...)
 			} else {
-				file, err := os.Open(folder + "/" + entry.Name())
+				file, err := os.Open(path.Join(folder, entry.Name()))
 				if err != nil {
 					log.Warn().Msg(err.Error())
 					return Files{}
@@ -255,7 +255,7 @@ func getFilesFromFolders(folders []string) Files {
 				}
 				files = append(files, File{
 					Name:     entry.Name(),
-					Path:     folder + "/" + entry.Name(),
+					Path:     path.Join(folder, entry.Name()),
 					Md5sum:   hex.EncodeToString(hash.Sum(nil)),
 					LastSeen: time.Now().UTC(),
 				})
