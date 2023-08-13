@@ -405,7 +405,7 @@ func pickFiles(files Files) Files {
 	}
 	log.Debug().Msgf("considered %d files and picked %d", len(files), len(pickedFiles))
 
-	if !options.dryRun {
+	if !options.dryRun && len(pickedFiles) > 0 {
 		_, err := os.Stat(options.destination)
 		if err == nil {
 			if options.destinationOption == DELETE {
