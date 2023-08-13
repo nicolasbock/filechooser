@@ -264,15 +264,25 @@ func getFilesFromFolders(folders []string) Files {
 					log.Warn().Msg(err.Error())
 					return Files{}
 				}
-				files = append(files, File{
+				newFile := File{
 					Name:     entry.Name(),
 					Path:     folder + "/" + entry.Name(),
 					Md5sum:   hex.EncodeToString(hash.Sum(nil)),
 					LastSeen: time.Now().UTC(),
-				})
+				}
+				files = append(files, newFile)
 			}
 		}
 	}
+	var filenamesFound map[string]string = map[string]string{}
+	for _, file := range files {
+		if _, ok := filenamesFound[file.Name]; ok {
+			log.Warn().Msgf("Filename %s (%s) already read before at %s", file.Name, file.Path, filenamesFound[file.Name])
+		} else {
+			filenamesFound[file.Name] = file.Path
+		}
+	}
+	log.Debug().Msgf("found %d files in folder(s) %s", len(files), strings.Join(folders, ","))
 	return files
 }
 
