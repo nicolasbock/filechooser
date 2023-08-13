@@ -592,6 +592,9 @@ func main() {
 
 	if options.resetDatabase {
 		createDB(true)
+		if len(options.folders) == 0 {
+			return
+		}
 	}
 	var allFiles = loadDB()
 
@@ -624,7 +627,7 @@ func main() {
 			fileString, _ = yaml.Marshal(allFiles)
 		}
 		fmt.Println(string(fileString))
-		os.Exit(0)
+		return
 	}
 
 	if len(options.folders) == 0 {
