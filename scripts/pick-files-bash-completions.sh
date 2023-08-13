@@ -1,11 +1,13 @@
+#!/bin/bash
+
 _complete_pick_files () {
   local cur prev
   local known_options=(
     -N --number
     --block-selection
     --debug
-    --delete-existing
     --destination
+    --destination-option
     --dry-run
     --folder
     -h --help
@@ -25,13 +27,15 @@ _complete_pick_files () {
       return
       ;;
     --print-database-format)
-      readarray -t COMPREPLY < <(compgen -W 'CSV JSON YAML' -- "$cur")
+      readarray -t COMPREPLY < <(compgen -W 'CSV JSON YAML' -- "${cur}")
       return
       ;;
+    --destination-option)
+      readarray -t COMPREPLY < <(compgen -W 'panic delete append' -- "${cur}")
   esac
 
   if [[ "$cur" == -* ]]; then
-    readarray -t COMPREPLY < <(compgen -W "${known_options[*]}" -- "$cur" )
+    readarray -t COMPREPLY < <(compgen -W "${known_options[*]}" -- "${cur}" )
     return
   fi
 

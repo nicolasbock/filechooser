@@ -121,14 +121,47 @@ func (f *DumpFormat) Set(s string) error {
 	return nil
 }
 
+type DestinationOption int
+
+const (
+	PANIC = iota
+	APPEND
+	DELETE
+)
+
+func (o *DestinationOption) String() string {
+	switch *o {
+	case PANIC:
+		return "panic"
+	case APPEND:
+		return "append"
+	case DELETE:
+		return "delete"
+	}
+	return "unknown"
+}
+
+func (o *DestinationOption) Set(s string) error {
+	switch s {
+	case "panic":
+		*o = PANIC
+	case "append":
+		*o = APPEND
+	case "delete":
+		*o = DELETE
+	default:
+		return fmt.Errorf("unknown options %s", s)
+	}
+	return nil
+}
+
 type ProgramOptions struct {
-	appendFiles            bool
 	blockSelectionDuration time.Duration
 	blockSelectionString   string
 	dbExpirationAge        time.Duration
 	debugRequested         bool
-	deleteExisting         bool
 	destination            string
+	destinationOption      DestinationOption
 	dryRun                 bool
 	folders                Folders
 	helpRequested          bool
@@ -191,9 +224,6 @@ func parseCommandline() {
 	gnuflag.Usage = printUsage
 	gnuflag.BoolVar(&options.debugRequested, "debug", false, "Debug output.")
 	gnuflag.BoolVar(&options.verboseRequested, "verbose", false, "Verbose output.")
-	gnuflag.BoolVar(&options.deleteExisting, "delete-existing", false, "Delete existing files in the "+
-		"destination folder instead of moving those files to a new location.")
-	gnuflag.BoolVar(&options.appendFiles, "append", false, "Append chosen files to existing destination folder.")
 	gnuflag.BoolVar(&options.dryRun, "dry-run", false, "If set then the chosen files are only shown and not copied.")
 	gnuflag.Var(&options.folders, "folder", "A folder PATH to consider when picking files; can be used multiple times; "+
 		"works recursively, meaning all sub-folders and their files are included in the selection.")
@@ -201,6 +231,7 @@ func parseCommandline() {
 	gnuflag.IntVar(&options.numberOfFiles, "N", 1, "The number of files to choose.")
 	gnuflag.StringVar(&options.destination, "destination", "output", "The output PATH for the "+
 		"selected files.")
+	gnuflag.Var(&options.destinationOption, "destination-option", "What to do when writing to destination; possible options are panic, append, and delete.")
 	gnuflag.BoolVar(&options.printVersion, "version", false, "Print the version of this program.")
 	gnuflag.Var(&options.suffixes, "suffix", "Only consider files with this SUFFIX. For instance, to only load "+
 		"jpeg files you would specify either 'jpg' or '.jpg'. By default, all files are considered.")
@@ -220,9 +251,6 @@ func parseCommandline() {
 	if options.printVersion {
 		fmt.Printf("Version: %s\n", Version)
 		os.Exit(0)
-	}
-	if options.appendFiles && options.deleteExisting {
-		log.Warn().Msg("I will delete the existing destination, ignoring the append option")
 	}
 	if options.blockSelectionString != "" {
 		options.blockSelectionDuration = convertDurationString(options.blockSelectionString).Abs()
@@ -358,7 +386,7 @@ func pickFiles(files Files) Files {
 	if !options.dryRun {
 		_, err := os.Stat(options.destination)
 		if err == nil {
-			if options.deleteExisting {
+			if options.destinationOption == DELETE {
 				log.Info().Msgf("deleting files in destination folder %s", options.destination)
 				dirEntries, err := os.ReadDir(options.destination)
 				if err != nil {
@@ -371,7 +399,7 @@ func pickFiles(files Files) Files {
 						log.Fatal().Msgf("cannot remove %s: %s", entry.Name(), err.Error())
 					}
 				}
-			} else if options.appendFiles {
+			} else if options.destinationOption == APPEND {
 				log.Debug().Msg("appending files to existing destination")
 			} else {
 				log.Fatal().Msg("destination folder already exists, aborting")
