@@ -166,7 +166,7 @@ type ProgramOptions struct {
 	folders                Folders
 	helpRequested          bool
 	numberOfFiles          int
-	printDatabase          bool
+	printDatabase          string
 	printDatabaseFormat    DumpFormat
 	printVersion           bool
 	resetDatabase          bool
@@ -249,7 +249,7 @@ func parseCommandline() {
 	gnuflag.BoolVar(&options.helpRequested, "h", false, "This help message.")
 	gnuflag.BoolVar(&options.helpRequested, "help", false, "This help message.")
 	gnuflag.BoolVar(&options.resetDatabase, "reset-database", false, "Reset the database (re-initialize). Use intended for testing only.")
-	gnuflag.BoolVar(&options.printDatabase, "print-database", false, "Print the internal database and exit.")
+	gnuflag.StringVar(&options.printDatabase, "print-database", "", "Print the internal database to a file and exit; the special name `-` means standard output.")
 	gnuflag.Var(&options.printDatabaseFormat, "print-database-format", "Format of printed database; possible options are CSV, JSON, and YAML.")
 	gnuflag.StringVar(&options.blockSelectionString, "block-selection", "", "Block selection of files for a certain "+
 		"period. Possible units are (s)econds, (m)inutes, (h)ours, (d)days, and (w)weeks.")
@@ -598,7 +598,7 @@ func main() {
 	}
 	var allFiles = loadDB()
 
-	if options.printDatabase {
+	if options.printDatabase != "" {
 		var fileString []byte
 		if len(allFiles) == 0 {
 			log.Info().Msg("Database empty")
@@ -626,7 +626,20 @@ func main() {
 		case YAML:
 			fileString, _ = yaml.Marshal(allFiles)
 		}
-		fmt.Println(string(fileString))
+		_, err := os.Stat(options.printDatabase)
+		if err == nil {
+			log.Fatal().Msgf("database output file %s already exists", options.printDatabase)
+		}
+		f, err := os.Create(options.printDatabase)
+		if err != nil {
+			log.Fatal().Msgf("could not create database file %s: %s", options.printDatabase, err.Error())
+		}
+		defer f.Close()
+		n, err := f.WriteString(string(fileString))
+		if err != nil {
+			log.Fatal().Msgf("error writing to database files %s: %s", options.printDatabase, err.Error())
+		}
+		log.Debug().Msgf("wrote %d bytes to %s", n, options.printDatabase)
 		return
 	}
 
