@@ -19,6 +19,7 @@ import (
 
 	"github.com/juju/gnuflag"
 	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/journald"
 	"github.com/rs/zerolog/log"
 	"gopkg.in/yaml.v3"
 )
@@ -184,6 +185,7 @@ type ProgramOptions struct {
 	dryRun                  bool
 	folders                 Folders
 	helpRequested           bool
+	journalDLogging         bool
 	numberOfFiles           int
 	printDatabase           string
 	printDatabaseFormat     DumpFormat
@@ -288,6 +290,7 @@ func parseCommandline() {
 	gnuflag.Var(&options.printDatabaseFormat, "print-database-format", "Format of printed database; possible options are CSV, JSON, and YAML.")
 	gnuflag.StringVar(&options.blockSelectionString, "block-selection", "", "Block selection of files for a certain "+
 		"period. Possible units are (s)econds, (m)inutes, (h)ours, (d)days, and (w)weeks.")
+	gnuflag.BoolVar(&options.journalDLogging, "journald", false, "Log to journald.")
 	gnuflag.BoolVar(&options.printDatabaseStatistics, "print-database-statistics", false, "Print some statistics of the internal database.")
 	gnuflag.Parse(true)
 
@@ -629,6 +632,9 @@ func adjustLogLevel() {
 	if options.debugRequested || options.verboseRequested {
 		log.Info().Msg("setting log to debug")
 		zerolog.SetGlobalLevel(zerolog.DebugLevel)
+	}
+	if options.journalDLogging {
+		log.Logger = log.Output(journald.NewJournalDWriter())
 	}
 }
 

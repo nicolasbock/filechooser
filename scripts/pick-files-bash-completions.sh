@@ -9,6 +9,7 @@ _complete_pick_files () {
     --destination-option
     --dry-run
     --folder
+    --journald
     --print-database
     --print-database-format
     --print-database-statistics
