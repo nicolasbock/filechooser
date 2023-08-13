@@ -43,3 +43,4 @@ parts:
       install --mode 0755 -D scripts/autorotate.sh ${CRAFT_PART_INSTALL}/usr/bin/autorotate.sh
       install --mode 0755 -D scripts/pick-files-bash-completions.sh ${CRAFT_PART_INSTALL}/usr/share/pick-files/pick-files-bash-completions.sh
       install --mode 0755 -D scripts/pick-files-bash-completions.sh ${CRAFT_PART_INSTALL}/usr/share/pick-files/autorotate-bash-completions.sh
+      install --mode 0644 -D docs/source/tips-and-tricks.rst ${CRAFT_PART_INSTALL}/usr/share/doc/pick-files/tips-and-tricks.rst
