@@ -193,6 +193,18 @@ pick-files --number 20 --destination new_folder --suffix .jpg --suffix .avi --fo
 Would choose at random 20 files from folder1 and folder2 (including sub-folders) and copy those files into new_folder. The new_folder is created if it does not exist already. In this example, only files with suffixes .jpg or .avi are considered.
 
 `)
+	// Read tips and tricks
+	f, err := os.Open("/usr/share/doc/pick-files/tips-and-tricks.rst")
+	if err != nil {
+		f, err = os.Open("docs/source/tips-and-tricks.rst")
+	}
+	if err == nil {
+		defer f.Close()
+		tipsAndTricks, err := io.ReadAll(f)
+		if err == nil {
+			fmt.Fprintln(os.Stderr, string(tipsAndTricks))
+		}
+	}
 	gnuflag.PrintDefaults()
 }
 
