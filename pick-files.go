@@ -116,7 +116,7 @@ func (f *DumpFormat) Set(s string) error {
 	case "YAML":
 		*f = YAML
 	default:
-		log.Fatal().Msgf("Unknown database dumpt format '%s'", s)
+		log.Fatal().Msgf("Unknown database dump format '%s'", s)
 	}
 	return nil
 }
@@ -234,6 +234,7 @@ func parseCommandline() {
 func getFilesFromFolders(folders []string) Files {
 	var files = Files{}
 	for _, folder := range folders {
+		log.Debug().Msgf("reading folder %s", folder)
 		dirEntries, err := os.ReadDir(folder)
 		if err != nil {
 			log.Fatal().Msg(err.Error())
