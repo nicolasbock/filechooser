@@ -204,9 +204,12 @@ pick-files is a script that randomly selects a specific number of files from a s
 
 ## Usage Example
 
-pick-files --number 20 --destination new_folder --suffix .jpg --suffix .avi --folder folder1 --folder folder2
+    pick-files --number 20 \
+        --destination output \
+        --suffix .jpg --suffix .avi \
+        --folder folder1 --folder folder2
 
-Would choose at random 20 files from folder1 and folder2 (including sub-folders) and copy those files into new_folder. The new_folder is created if it does not exist already. In this example, only files with suffixes .jpg or .avi are considered.
+Would choose at random 20 files from folder1 and folder2 (including sub-folders) and copy those files into output. The output is created if it does not exist already. In this example, only files with suffixes .jpg or .avi are considered.
 
 `)
 	// Read tips and tricks
