@@ -68,3 +68,10 @@ Build it from source
     make
 
 Which requires ``>= go-1.20`` and ``make``.
+
+Code Development
+----------------
+
+The code is hosted on GitHub at <https://github.com/nicolasbock/filechooser>.
+If you are interested in contributing in any way, please have a look at the
+repository.
