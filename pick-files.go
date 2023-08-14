@@ -470,7 +470,7 @@ func pickFiles(files Files) Files {
 					log.Fatal().Msgf("could not strip suffix from filename %s", file.Name)
 				}
 				var combinedFilename string
-				for counter := 0;; counter++ {
+				for counter := 0; ; counter++ {
 					if counter == 0 {
 						combinedFilename = file.Name
 					} else {
@@ -694,15 +694,18 @@ func main() {
 		case YAML:
 			fileString, _ = yaml.Marshal(allFiles)
 		}
-		_, err := os.Stat(options.printDatabase)
-		if err == nil {
-			log.Fatal().Msgf("database output file %s already exists", options.printDatabase)
+		var f *os.File = os.Stdout
+		if options.printDatabase != "-" {
+			_, err := os.Stat(options.printDatabase)
+			if err == nil {
+				log.Fatal().Msgf("database output file %s already exists", options.printDatabase)
+			}
+			f, err = os.Create(options.printDatabase)
+			if err != nil {
+				log.Fatal().Msgf("could not create database file %s: %s", options.printDatabase, err.Error())
+			}
+			defer f.Close()
 		}
-		f, err := os.Create(options.printDatabase)
-		if err != nil {
-			log.Fatal().Msgf("could not create database file %s: %s", options.printDatabase, err.Error())
-		}
-		defer f.Close()
 		n, err := f.WriteString(string(fileString))
 		if err != nil {
 			log.Fatal().Msgf("error writing to database files %s: %s", options.printDatabase, err.Error())
