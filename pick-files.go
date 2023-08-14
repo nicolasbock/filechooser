@@ -6,6 +6,7 @@ import (
 	"encoding/csv"
 	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"math/rand"
@@ -23,6 +24,8 @@ import (
 )
 
 var Version = "unknown"
+
+var ErrDestinationFileAlreadyExists = errors.New("destination file already exists")
 
 type Folders []string
 type Suffixes []string
@@ -346,7 +349,7 @@ func getFilesFromFolders(folders []string) Files {
 func copyFile(src, dst string) (int64, error) {
 	_, err := os.Stat(dst)
 	if err == nil {
-		log.Fatal().Msgf("destination file %s already exists", dst)
+		return 0, ErrDestinationFileAlreadyExists
 	}
 
 	sourceFileStat, err := os.Stat(src)
@@ -423,6 +426,7 @@ func pickFiles(files Files) Files {
 	for i := 0; i < options.numberOfFiles; i++ {
 		if len(eligibleFiles) == 0 {
 			log.Warn().Msg("ran out of eligible files")
+			break
 		}
 		j := rand.Intn(len(eligibleFiles))
 		log.Debug().Msgf("picked file %s", eligibleFiles[j])
@@ -431,39 +435,65 @@ func pickFiles(files Files) Files {
 	}
 	log.Debug().Msgf("considered %d files and picked %d", len(files), len(pickedFiles))
 
-	if !options.dryRun && len(pickedFiles) > 0 {
-		_, err := os.Stat(options.destination)
-		if err == nil {
-			if options.destinationOption == DELETE {
-				log.Info().Msgf("deleting files in destination folder %s", options.destination)
-				dirEntries, err := os.ReadDir(options.destination)
-				if err != nil {
-					log.Fatal().Msg("unable to read destination folder")
-				}
-				for _, entry := range dirEntries {
-					log.Debug().Msgf("removing %s", path.Join(options.destination, entry.Name()))
-					err = os.Remove(path.Join(options.destination, entry.Name()))
+	if !options.dryRun {
+		if len(pickedFiles) > 0 {
+			_, err := os.Stat(options.destination)
+			if err == nil {
+				switch options.destinationOption {
+				case DELETE:
+					log.Info().Msgf("deleting files in destination folder %s", options.destination)
+					dirEntries, err := os.ReadDir(options.destination)
 					if err != nil {
-						log.Fatal().Msgf("cannot remove %s: %s", entry.Name(), err.Error())
+						log.Fatal().Msg("unable to read destination folder")
+					}
+					for _, entry := range dirEntries {
+						log.Debug().Msgf("removing %s", path.Join(options.destination, entry.Name()))
+						err = os.Remove(path.Join(options.destination, entry.Name()))
+						if err != nil {
+							log.Fatal().Msgf("cannot remove %s: %s", entry.Name(), err.Error())
+						}
+					}
+				case APPEND:
+					log.Debug().Msg("appending files to existing destination")
+				default:
+					log.Fatal().Msg("destination folder already exists, aborting")
+				}
+			}
+			err = os.MkdirAll(options.destination, os.ModePerm)
+			if err != nil {
+				log.Fatal().Msgf("error creating destination folder %s: %s", options.destination, err.Error())
+			}
+			var suffixRegex = regexp.MustCompile("^(.*)[.]([^.]*)$")
+			for _, file := range pickedFiles {
+				var filename []string = suffixRegex.FindStringSubmatch(file.Name)
+				if filename == nil {
+					log.Fatal().Msgf("could not strip suffix from filename %s", file.Name)
+				}
+				var combinedFilename string
+				for counter := 0;; counter++ {
+					if counter == 0 {
+						combinedFilename = file.Name
+					} else {
+						combinedFilename = fmt.Sprintf("%s-%d.%s", filename[1], counter, filename[2])
+					}
+					log.Debug().Msgf("attempting to copy %s -> %s", file.Path, combinedFilename)
+					_, err := copyFile(file.Path, path.Join(options.destination, combinedFilename))
+					if err != nil {
+						if options.destinationOption == APPEND && err == ErrDestinationFileAlreadyExists {
+							// Check for filename collision.
+							log.Debug().Msgf("filename collision")
+						} else {
+							log.Fatal().Msgf("error copying %s to %s (%s)", file.Path, options.destination, err.Error())
+						}
+					} else {
+						break
 					}
 				}
-			} else if options.destinationOption == APPEND {
-				log.Debug().Msg("appending files to existing destination")
-			} else {
-				log.Fatal().Msg("destination folder already exists, aborting")
+				log.Debug().Msgf("successfully copied %s", combinedFilename)
+				file.LastPicked = time.Now().UTC()
 			}
-		}
-		err = os.MkdirAll(options.destination, os.ModePerm)
-		if err != nil {
-			log.Fatal().Msgf("error creating destination folder %s: %s", options.destination, err.Error())
-		}
-		for _, file := range pickedFiles {
-			log.Debug().Msgf("copying %s", file)
-			_, err := copyFile(file.Path, options.destination+"/"+file.Name)
-			if err != nil {
-				log.Fatal().Msgf("error copying %s to %s (%s)", file.Path, options.destination, err.Error())
-			}
-			file.LastPicked = time.Now().UTC()
+		} else {
+			log.Info().Msg("could not find any eligible files")
 		}
 	} else {
 		log.Info().Msg("dry-run, skipping copying of files")
