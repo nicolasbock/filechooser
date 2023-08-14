@@ -36,6 +36,12 @@ jobs:
           ./pick-files --number 10 --destination output-2 --folder artifacts/a/a
           ./pick-files --number 10 --destination output-3 --folder artifacts/a/a
           ./pick-files --print-database-statistics
+          ./pick-files --folder artifacts --suffix txt --destination-option append --destination output-4 --verbose
+          ./pick-files --folder artifacts --suffix txt --destination-option append --destination output-4 --verbose
+          ./pick-files --folder artifacts --suffix txt --destination-option append --destination output-4 --verbose
+          ./pick-files --folder artifacts --suffix txt --destination-option append --destination output-4 --verbose
+          ./pick-files --folder artifacts --suffix txt --destination-option append --destination output-4 --verbose
+          tree output-4
 
       - name: Test
         run: make test
