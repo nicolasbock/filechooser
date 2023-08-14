@@ -6,6 +6,18 @@ summary: A script that picks a random selection of files
 description: |
   A script that copies a random selection of files from a set of folders to a
   single destination folder.
+
+  Usage Example
+  -------------
+
+      pick-files --number 20 \
+          --destination output \
+          --suffix .jpg --suffix .avi \
+          --folder folder1 --folder folder2
+
+  which copies 20 files chosen randomly from the files in `folder1` and
+  `folder2` with suffixes `.jpg` and `.avi` into the folder `output`.
+
 icon: icon/icon-256.svg
 license: Apache-2.0
 source-code: https://github.com/nicolasbock/filechooser
