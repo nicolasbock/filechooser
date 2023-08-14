@@ -37,11 +37,16 @@ Usage Example
 
 .. code-block:: console
 
-    pick-files --number 20 --destination new_folder \
-        --suffix .jpg --suffix .avi --folder folder1 --folder folder2
+    pick-files --number 20 \
+        --destination output \
+        --suffix .jpg --suffix .avi \
+        --folder folder1 --folder folder2
+
+which copies 20 files chosen randomly from the files in `folder1` and
+`folder2` with suffixes `.jpg` and `.avi` into the folder `output`.
 
 For more details on all supported options, see the :doc:`Supported
-Options<pick-files-help>` page.
+Options<pick-files-help>` page or run the command with `--help`.
 
 Installation
 ------------
