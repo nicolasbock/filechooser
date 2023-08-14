@@ -57,6 +57,18 @@ type File struct {
 
 type Files []File
 
+type DatabaseStatistics struct {
+	dbSize        int64
+	NumberEntries int
+}
+
+func (f DatabaseStatistics) String() string {
+	var result string
+	result = fmt.Sprintf("The database has %d entries\n", f.NumberEntries)
+	result += fmt.Sprintf("It takes up %d bytes on disk", f.dbSize)
+	return result
+}
+
 const dbSchema int = 1
 const dbFilename string = "pick-files-db.json"
 
@@ -158,6 +170,7 @@ func (o *DestinationOption) Set(s string) error {
 type ProgramOptions struct {
 	blockSelectionDuration time.Duration
 	blockSelectionString   string
+	databaseStatistics     bool
 	dbExpirationAge        time.Duration
 	debugRequested         bool
 	destination            string
@@ -265,6 +278,7 @@ func parseCommandline() {
 	gnuflag.Var(&options.printDatabaseFormat, "print-database-format", "Format of printed database; possible options are CSV, JSON, and YAML.")
 	gnuflag.StringVar(&options.blockSelectionString, "block-selection", "", "Block selection of files for a certain "+
 		"period. Possible units are (s)econds, (m)inutes, (h)ours, (d)days, and (w)weeks.")
+	gnuflag.BoolVar(&options.databaseStatistics, "database-statistics", false, "Print some statistics of the internal database.")
 	gnuflag.Parse(true)
 
 	if options.helpRequested {
@@ -597,6 +611,18 @@ func expireOldDBEntries(files Files, maxAge time.Duration) Files {
 	return result
 }
 
+func getDatabaseStatistics(files Files) DatabaseStatistics {
+	var statistics DatabaseStatistics = DatabaseStatistics{}
+	statistics.NumberEntries = len(files)
+	info, err := os.Stat(getDBPath())
+	if err != nil {
+		log.Warn().Msg("cannot read database file")
+	} else {
+		statistics.dbSize = info.Size()
+	}
+	return statistics
+}
+
 func main() {
 	initializeLogging()
 	parseCommandline()
@@ -653,6 +679,14 @@ func main() {
 		}
 		log.Debug().Msgf("wrote %d bytes to %s", n, options.printDatabase)
 		return
+	}
+
+	if options.databaseStatistics {
+		statistics := getDatabaseStatistics(allFiles)
+		fmt.Println(statistics)
+		if len(options.folders) == 0 {
+			return
+		}
 	}
 
 	if len(options.folders) == 0 {

@@ -125,3 +125,5 @@ func TestConvertDurationString(t *testing.T) {
 		}
 	}
 }
+
+func TestGetDatabaseStatistics(t *testing.T) {}

@@ -3,20 +3,21 @@
 _complete_pick_files () {
   local cur prev
   local known_options=(
-    -N --number
     --block-selection
+    --database-statistics
     --debug
     --destination
     --destination-option
     --dry-run
     --folder
-    -h --help
     --print-database
     --print-database-format
     --reset-database
     --suffix
     --verbose
     --version
+    -h --help
+    -N --number
   )
 
   _init_completion || return
