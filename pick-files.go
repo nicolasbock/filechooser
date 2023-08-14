@@ -168,23 +168,23 @@ func (o *DestinationOption) Set(s string) error {
 }
 
 type ProgramOptions struct {
-	blockSelectionDuration time.Duration
-	blockSelectionString   string
-	databaseStatistics     bool
-	dbExpirationAge        time.Duration
-	debugRequested         bool
-	destination            string
-	destinationOption      DestinationOption
-	dryRun                 bool
-	folders                Folders
-	helpRequested          bool
-	numberOfFiles          int
-	printDatabase          string
-	printDatabaseFormat    DumpFormat
-	printVersion           bool
-	resetDatabase          bool
-	suffixes               Suffixes
-	verboseRequested       bool
+	blockSelectionDuration  time.Duration
+	blockSelectionString    string
+	dbExpirationAge         time.Duration
+	debugRequested          bool
+	destination             string
+	destinationOption       DestinationOption
+	dryRun                  bool
+	folders                 Folders
+	helpRequested           bool
+	numberOfFiles           int
+	printDatabase           string
+	printDatabaseFormat     DumpFormat
+	printDatabaseStatistics bool
+	printVersion            bool
+	resetDatabase           bool
+	suffixes                Suffixes
+	verboseRequested        bool
 }
 
 var options = ProgramOptions{
@@ -278,7 +278,7 @@ func parseCommandline() {
 	gnuflag.Var(&options.printDatabaseFormat, "print-database-format", "Format of printed database; possible options are CSV, JSON, and YAML.")
 	gnuflag.StringVar(&options.blockSelectionString, "block-selection", "", "Block selection of files for a certain "+
 		"period. Possible units are (s)econds, (m)inutes, (h)ours, (d)days, and (w)weeks.")
-	gnuflag.BoolVar(&options.databaseStatistics, "database-statistics", false, "Print some statistics of the internal database.")
+	gnuflag.BoolVar(&options.printDatabaseStatistics, "print-database-statistics", false, "Print some statistics of the internal database.")
 	gnuflag.Parse(true)
 
 	if options.helpRequested {
@@ -681,7 +681,7 @@ func main() {
 		return
 	}
 
-	if options.databaseStatistics {
+	if options.printDatabaseStatistics {
 		statistics := getDatabaseStatistics(allFiles)
 		fmt.Println(statistics)
 		if len(options.folders) == 0 {

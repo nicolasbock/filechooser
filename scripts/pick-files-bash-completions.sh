@@ -4,7 +4,6 @@ _complete_pick_files () {
   local cur prev
   local known_options=(
     --block-selection
-    --database-statistics
     --debug
     --destination
     --destination-option
@@ -12,6 +11,7 @@ _complete_pick_files () {
     --folder
     --print-database
     --print-database-format
+    --print-database-statistics
     --reset-database
     --suffix
     --verbose
