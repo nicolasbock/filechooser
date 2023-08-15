@@ -29,8 +29,10 @@
 Introduction
 ============
 
-A script that copies a random selection of files from a set of folders
-to a single destination folder.
+`pick-files` is a script that randomly selects a specific number of files from
+a set of folders and copies these files to a single destination folder. During
+repeat runs the previously selected files are excluded from the selection for
+a specific time period that can be specified.
 
 Usage Example
 -------------
@@ -42,8 +44,10 @@ Usage Example
         --suffix .jpg --suffix .avi \
         --folder folder1 --folder folder2
 
-which copies 20 files chosen randomly from the files in `folder1` and
-`folder2` with suffixes `.jpg` and `.avi` into the folder `output`.
+Would choose at random 20 files from `folder1` and `folder2` (including
+sub-folders) and copy those files into `output`. The `output` is created if it
+does not exist already. In this example, only files with suffixes `.jpg` or
+`.avi` are considered.
 
 For more details on all supported options, see the :doc:`Supported
 Options<pick-files-help>` page or run the command with `--help`.
