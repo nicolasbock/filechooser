@@ -61,14 +61,18 @@ type File struct {
 type Files []File
 
 type DatabaseStatistics struct {
-	dbSize        int64
-	NumberEntries int
+	dbSize           int64
+	NumberEntries    int
+	oldestLastPicked time.Time
+	oldestLastSeen   time.Time
 }
 
 func (f DatabaseStatistics) String() string {
 	var result string
 	result = fmt.Sprintf("The database has %d entries\n", f.NumberEntries)
-	result += fmt.Sprintf("It takes up %d bytes on disk", f.dbSize)
+	result += fmt.Sprintf("Disk usage: %d bytes\n", f.dbSize)
+	result += fmt.Sprintf("Oldest last seen: %s\n", f.oldestLastSeen)
+	result += fmt.Sprintf("Oldest last picked: %s\n", f.oldestLastPicked)
 	return result
 }
 
@@ -644,6 +648,7 @@ func expireOldDBEntries(files Files, maxAge time.Duration) Files {
 	return result
 }
 
+// getDatabaseStatistics extracts statistics on the database.
 func getDatabaseStatistics(files Files) DatabaseStatistics {
 	var statistics DatabaseStatistics = DatabaseStatistics{}
 	statistics.NumberEntries = len(files)
@@ -652,6 +657,16 @@ func getDatabaseStatistics(files Files) DatabaseStatistics {
 		log.Warn().Msg("cannot read database file")
 	} else {
 		statistics.dbSize = info.Size()
+	}
+	statistics.oldestLastPicked = time.Now()
+	statistics.oldestLastSeen = time.Now()
+	for _, file := range files {
+		if file.LastSeen.Before(statistics.oldestLastSeen) {
+			statistics.oldestLastSeen = file.LastSeen
+		}
+		if file.LastPicked.Before(statistics.oldestLastPicked) {
+			statistics.oldestLastPicked = file.LastPicked
+		}
 	}
 	return statistics
 }
@@ -718,8 +733,7 @@ func main() {
 	}
 
 	if options.printDatabaseStatistics {
-		statistics := getDatabaseStatistics(allFiles)
-		fmt.Println(statistics)
+		fmt.Println(getDatabaseStatistics(allFiles))
 		if len(options.folders) == 0 {
 			return
 		}
