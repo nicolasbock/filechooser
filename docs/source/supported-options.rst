@@ -27,14 +27,14 @@ Supported Options
    The snap includes example Systemd service and timer files that can be used to
    set up a daily update of the picked files.
 
-   .. code-block::
+   .. code-block:: console
 
       $ ls /snap/pick-files/current/usr/share/pick-files/pick-files-daily*
       pick-files-daily.service pick-files-daily.timer
 
    Run
 
-   .. code-block::
+   .. code-block:: console
 
       $ systemctl edit --user --force --full pick-files-daily.service
 
@@ -43,7 +43,7 @@ Supported Options
 
    Then
 
-   .. code-block::
+   .. code-block:: console
 
       $ systemctl enable --user pick-files-daily.timer
       $ systemctl start --user pick-files-daily.timer
@@ -51,7 +51,7 @@ Supported Options
    will start the timer. The output of the pick-files command will be in the
    journal and can be checked with
 
-   .. code-block::
+   .. code-block:: console
 
       $ journalctl --unit pick-files-daily.service
 
