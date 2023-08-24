@@ -229,11 +229,13 @@ var options = ProgramOptions{
 func printUsage() {
 	fmt.Fprintf(os.Stderr, "Usage of %s:\n", path.Base(os.Args[0]))
 	fmt.Fprintf(os.Stderr, `
-# Introduction
+Introduction
+============
 
 pick-files is a script that randomly selects a specific number of files from a set of folders and copies these files to a single destination folder. During repeat runs the previously selected files are excluded from the selection for a specific time period that can be specified.
 
-## Usage Example
+Usage Example
+-------------
 
     pick-files --number 20 \
         --destination output \
@@ -255,6 +257,7 @@ Would choose at random 20 files from folder1 and folder2 (including sub-folders)
 			fmt.Fprintln(os.Stderr, string(tipsAndTricks))
 		}
 	}
+	fmt.Fprintf(os.Stderr, "Options\n-------\n\n")
 	gnuflag.PrintDefaults()
 }
 
