@@ -5,11 +5,13 @@ Supported Options
 
    Usage of pick-files:
 
-   # Introduction
+   Introduction
+   ============
 
    pick-files is a script that randomly selects a specific number of files from a set of folders and copies these files to a single destination folder. During repeat runs the previously selected files are excluded from the selection for a specific time period that can be specified.
 
-   ## Usage Example
+   Usage Example
+   -------------
 
        pick-files --number 20 \
            --destination output \
@@ -54,6 +56,9 @@ Supported Options
    .. code-block:: console
 
       $ journalctl --unit pick-files-daily.service
+
+   Options
+   -------
 
    -N, --number  (= 1)
        The number of files to choose.
