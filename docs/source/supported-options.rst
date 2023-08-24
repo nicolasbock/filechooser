@@ -3,7 +3,7 @@ Supported Options
 
 .. code-block:: console
 
-   Usage of pick-files-1.3.3:
+   Usage of pick-files-1.3.3-12-gbdb8412:
 
    # Introduction
 
@@ -11,9 +11,12 @@ Supported Options
 
    ## Usage Example
 
-   pick-files --number 20 --destination new_folder --suffix .jpg --suffix .avi --folder folder1 --folder folder2
+       pick-files --number 20 \
+           --destination output \
+           --suffix .jpg --suffix .avi \
+           --folder folder1 --folder folder2
 
-   Would choose at random 20 files from folder1 and folder2 (including sub-folders) and copy those files into new_folder. The new_folder is created if it does not exist already. In this example, only files with suffixes .jpg or .avi are considered.
+   Would choose at random 20 files from folder1 and folder2 (including sub-folders) and copy those files into output. The output is created if it does not exist already. In this example, only files with suffixes .jpg or .avi are considered.
 
    Tips and Tricks
    ===============
@@ -36,6 +39,8 @@ Supported Options
        A folder PATH to consider when picking files; can be used multiple times; works recursively, meaning all sub-folders and their files are included in the selection.
    -h, --help  (= false)
        This help message.
+   --journald  (= false)
+       Log to journald.
    --print-database (= "")
        Print the internal database to a file and exit; the special name `-` means standard output.
    --print-database-format  (= CSV)
