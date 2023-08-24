@@ -1,0 +1,5 @@
+[Unit]
+Description = Copy files every day
+
+[Service]
+ExecStart = /snap/bin/pick-files --config ${HOME}/pick-files-config.yaml --verbose

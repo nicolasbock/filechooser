@@ -1,0 +1,9 @@
+[Unit]
+Description = Copy files every day
+
+[Timer]
+OnCalendar = *-*-* 11:00:00
+Unit = pick-files-daily.service
+
+[Install]
+WantedBy = timers.target

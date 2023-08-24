@@ -60,3 +60,5 @@ parts:
       install --mode 0755 -D scripts/pick-files-bash-completions.sh ${CRAFT_PART_INSTALL}/usr/share/pick-files/pick-files-bash-completions.sh
       install --mode 0755 -D scripts/pick-files-bash-completions.sh ${CRAFT_PART_INSTALL}/usr/share/pick-files/autorotate-bash-completions.sh
       install --mode 0644 -D docs/source/tips-and-tricks.rst ${CRAFT_PART_INSTALL}/usr/share/doc/pick-files/tips-and-tricks.rst
+      install --mode 0644 -D pick-files-daily.service ${CRAFT_PART_INSTALL}/usr/share/pick-files/pick-files-daily.service
+      install --mode 0644 -D pick-files-daily.timer ${CRAFT_PART_INSTALL}/usr/share/pick-files/pick-files-daily.timer
