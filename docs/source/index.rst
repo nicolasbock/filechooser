@@ -8,6 +8,5 @@ Welcome to filechooser's documentation!
 
    supported-options
    tips-and-tricks
-   design_goals
 
 .. include:: ../../README.rst
