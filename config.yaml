@@ -1,0 +1,9 @@
+block-selection: 120d
+destination: output
+destination-option: delete
+folder:
+    - artifacts
+number: 10
+suffix:
+    - jpg
+    - png

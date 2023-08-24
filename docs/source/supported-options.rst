@@ -27,6 +27,8 @@ Supported Options
        The number of files to choose.
    --block-selection (= "")
        Block selection of files for a certain period. Possible units are (s)econds, (m)inutes, (h)ours, (d)days, and (w)weeks.
+   --config (= "")
+       Use configuration file
    --debug  (= false)
        Debug output.
    --destination (= "output")
@@ -35,6 +37,8 @@ Supported Options
        What to do when writing to destination; possible options are panic, append, and delete.
    --dry-run  (= false)
        If set then the chosen files are only shown and not copied.
+   --dump-configuration  (= false)
+       Dump current configuration; output can be used as configuration file.
    --folder  (= )
        A folder PATH to consider when picking files; can be used multiple times; works recursively, meaning all sub-folders and their files are included in the selection.
    -h, --help  (= false)
