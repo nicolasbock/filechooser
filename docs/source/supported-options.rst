@@ -3,7 +3,7 @@ Supported Options
 
 .. code-block:: console
 
-   Usage of pick-files-1.3.3-12-gbdb8412:
+   Usage of pick-files:
 
    # Introduction
 

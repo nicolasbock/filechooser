@@ -28,6 +28,14 @@ jobs:
 
       - name: Build
         run: make
+
+      - name: Formatting check
+        run: |
+          set -e -u -x
+          PICKFILES=./pick-files ./scripts/update-usage-information.sh
+          gofmt -w *.go
+          (( $(git diff | wc -l) == 0 )) || false
+
       - name: Simple test
         run: |
           set -e -u -x

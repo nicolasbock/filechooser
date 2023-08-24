@@ -2,6 +2,8 @@
 
 set -u -e
 
+: ${PICKFILES:=pick-files}
+
 cat <<EOF > docs/source/supported-options.rst
 Supported Options
 =================
@@ -9,4 +11,4 @@ Supported Options
 .. code-block:: console
 
 EOF
-pick-files --help 2>&1| sed --expression 's/^/   /' --expression 's/ \+$//' >> docs/source/supported-options.rst
+${PICKFILES} --help 2>&1| sed --expression 's/^/   /' --expression 's/ \+$//' >> docs/source/supported-options.rst

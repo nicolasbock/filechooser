@@ -202,7 +202,7 @@ var options = ProgramOptions{
 
 // printUsage prints program usage.
 func printUsage() {
-	fmt.Fprintf(os.Stderr, "Usage of %s-%s:\n", path.Base(os.Args[0]), Version)
+	fmt.Fprintf(os.Stderr, "Usage of %s:\n", path.Base(os.Args[0]))
 	fmt.Fprintf(os.Stderr, `
 # Introduction
 
