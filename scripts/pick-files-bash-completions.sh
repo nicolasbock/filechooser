@@ -34,6 +34,8 @@ _complete_pick_files () {
       ;;
     --destination-option)
       readarray -t COMPREPLY < <(compgen -W 'panic delete append' -- "${cur}")
+      return
+      ;;
   esac
 
   if [[ "$cur" == -* ]]; then
