@@ -37,6 +37,13 @@ apps:
     plugs:
       - home
       - removable-media
+  pick-files-daily:
+    command: /usr/bin/pick-files
+    daemon: simple
+    timer: 09:00
+    plugs:
+      - home
+      - removable-media
   autorotate:
     command: usr/bin/autorotate.sh
     completer: usr/share/pick-files/autorotate-bash-completions.sh
