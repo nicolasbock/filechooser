@@ -147,10 +147,13 @@ const (
 	PANIC = iota
 	APPEND
 	DELETE
+	UNSET
 )
 
 func (o *DestinationOption) String() string {
 	switch *o {
+	case UNSET:
+		return "unset"
 	case PANIC:
 		return "panic"
 	case APPEND:
@@ -175,25 +178,47 @@ func (o *DestinationOption) Set(s string) error {
 	return nil
 }
 
+func (o *DestinationOption) UnmarshalText(bs []byte) error {
+	switch string(bs) {
+	case "panic":
+		*o = PANIC
+	case "append":
+		*o = APPEND
+	case "delete":
+		*o = DELETE
+	default:
+		return fmt.Errorf("unknown options %s", string(bs))
+	}
+	return nil
+}
+
 type ProgramOptions struct {
 	blockSelectionDuration  time.Duration
-	blockSelectionString    string
+	BlockSelectionString    string `yaml:"block-selection"`
+	configurationFile       string
 	dbExpirationAge         time.Duration
 	debugRequested          bool
-	destination             string
-	destinationOption       DestinationOption
+	Destination             string            `yaml:"destination"`
+	DestinationOption       DestinationOption `yaml:"destination-option"`
+	dumpConfiguration       bool
 	dryRun                  bool
-	folders                 Folders
+	Folders                 Folders `yaml:"folder"`
 	helpRequested           bool
 	journalDLogging         bool
-	numberOfFiles           int
+	NumberOfFiles           int `yaml:"number"`
 	printDatabase           string
 	printDatabaseFormat     DumpFormat
 	printDatabaseStatistics bool
 	printVersion            bool
 	resetDatabase           bool
-	suffixes                Suffixes
+	Suffixes                Suffixes `yaml:"suffix"`
 	verboseRequested        bool
+}
+
+func (o ProgramOptions) String() string {
+	var result string
+	result += fmt.Sprintf("--block-duration %s", o.blockSelectionDuration)
+	return result
 }
 
 var options = ProgramOptions{
@@ -239,20 +264,16 @@ func convertDurationString(durationString string) time.Duration {
 	var daysRegex *regexp.Regexp = regexp.MustCompile("^([0-9]+)d$")
 	var weeksRegex *regexp.Regexp = regexp.MustCompile("^([0-9]+)w$")
 	if daysRegex.MatchString(durationString) {
-		fmt.Println("parsing days")
 		dayString := daysRegex.FindStringSubmatch(durationString)
 		days, err := strconv.ParseInt(dayString[1], 10, 64)
-		fmt.Printf("got %d days\n", days)
 		if err != nil {
 			log.Fatal().Msgf("error parsing duration %s: %s", durationString, err.Error())
 		}
 		durationString = fmt.Sprintf("%dh", days*24)
 	}
 	if weeksRegex.MatchString(durationString) {
-		fmt.Println("parsing weeks")
 		weekString := weeksRegex.FindStringSubmatch(durationString)
 		weeks, err := strconv.ParseInt(weekString[1], 10, 64)
-		fmt.Printf("got %d weeks\n", weeks)
 		if err != nil {
 			log.Fatal().Msgf("error parsing duration %s: %s", durationString, err.Error())
 		}
@@ -266,6 +287,51 @@ func convertDurationString(durationString string) time.Duration {
 	return duration
 }
 
+// dumpConfiguration dumps the current configuration to standard output.
+func dumpConfiguration() {
+	old, _ := yaml.Marshal(options)
+	fmt.Print(string(old))
+}
+
+// loadConfigurationFile loads configuration options from file and merges the
+// existing options `o` with the read options where the options from file
+// supersede the existing options.
+func loadConfigurationFile(o ProgramOptions) ProgramOptions {
+	var newOptions ProgramOptions = ProgramOptions{}
+	lines, err := os.ReadFile(o.configurationFile)
+	if err != nil {
+		log.Debug().Msgf("could not open configuration file %s", o.configurationFile)
+		return o
+	}
+	newOptions.DestinationOption = UNSET
+	err = yaml.Unmarshal(lines, &newOptions)
+	if err != nil {
+		log.Warn().Msgf("could not read configuration file: %s", err.Error())
+	}
+	var result ProgramOptions = o
+	if newOptions.BlockSelectionString != "" {
+		result.BlockSelectionString = newOptions.BlockSelectionString
+		result.blockSelectionDuration = convertDurationString(newOptions.BlockSelectionString).Abs()
+	}
+	if newOptions.Destination != "" {
+		result.Destination = newOptions.Destination
+	}
+	if newOptions.DestinationOption != UNSET {
+		result.DestinationOption = newOptions.DestinationOption
+	}
+	if newOptions.Folders != nil {
+		result.Folders = newOptions.Folders
+	}
+	if newOptions.NumberOfFiles != 0 {
+		result.NumberOfFiles = newOptions.NumberOfFiles
+	}
+	if newOptions.Suffixes != nil {
+		result.Suffixes = newOptions.Suffixes
+	}
+	log.Debug().Msgf("loaded configuration: %s", result.String())
+	return result
+}
+
 // parseCommandline parses the command line arguments and stores the option
 // values.
 func parseCommandline() {
@@ -273,26 +339,37 @@ func parseCommandline() {
 	gnuflag.BoolVar(&options.debugRequested, "debug", false, "Debug output.")
 	gnuflag.BoolVar(&options.verboseRequested, "verbose", false, "Verbose output.")
 	gnuflag.BoolVar(&options.dryRun, "dry-run", false, "If set then the chosen files are only shown and not copied.")
-	gnuflag.Var(&options.folders, "folder", "A folder PATH to consider when picking files; can be used multiple times; "+
+	gnuflag.Var(&options.Folders, "folder", "A folder PATH to consider when picking files; can be used multiple times; "+
 		"works recursively, meaning all sub-folders and their files are included in the selection.")
-	gnuflag.IntVar(&options.numberOfFiles, "number", 1, "The number of files to choose.")
-	gnuflag.IntVar(&options.numberOfFiles, "N", 1, "The number of files to choose.")
-	gnuflag.StringVar(&options.destination, "destination", "output", "The output PATH for the "+
+	gnuflag.IntVar(&options.NumberOfFiles, "number", 1, "The number of files to choose.")
+	gnuflag.IntVar(&options.NumberOfFiles, "N", 1, "The number of files to choose.")
+	gnuflag.StringVar(&options.Destination, "destination", "output", "The output PATH for the "+
 		"selected files.")
-	gnuflag.Var(&options.destinationOption, "destination-option", "What to do when writing to destination; possible options are panic, append, and delete.")
+	gnuflag.Var(&options.DestinationOption, "destination-option", "What to do when writing to destination; possible options are panic, append, and delete.")
 	gnuflag.BoolVar(&options.printVersion, "version", false, "Print the version of this program.")
-	gnuflag.Var(&options.suffixes, "suffix", "Only consider files with this SUFFIX. For instance, to only load "+
+	gnuflag.Var(&options.Suffixes, "suffix", "Only consider files with this SUFFIX. For instance, to only load "+
 		"jpeg files you would specify either 'jpg' or '.jpg'. By default, all files are considered.")
 	gnuflag.BoolVar(&options.helpRequested, "h", false, "This help message.")
 	gnuflag.BoolVar(&options.helpRequested, "help", false, "This help message.")
 	gnuflag.BoolVar(&options.resetDatabase, "reset-database", false, "Reset the database (re-initialize). Use intended for testing only.")
 	gnuflag.StringVar(&options.printDatabase, "print-database", "", "Print the internal database to a file and exit; the special name `-` means standard output.")
 	gnuflag.Var(&options.printDatabaseFormat, "print-database-format", "Format of printed database; possible options are CSV, JSON, and YAML.")
-	gnuflag.StringVar(&options.blockSelectionString, "block-selection", "", "Block selection of files for a certain "+
+	gnuflag.StringVar(&options.BlockSelectionString, "block-selection", "", "Block selection of files for a certain "+
 		"period. Possible units are (s)econds, (m)inutes, (h)ours, (d)days, and (w)weeks.")
 	gnuflag.BoolVar(&options.journalDLogging, "journald", false, "Log to journald.")
 	gnuflag.BoolVar(&options.printDatabaseStatistics, "print-database-statistics", false, "Print some statistics of the internal database.")
+	gnuflag.StringVar(&options.configurationFile, "config", "", "Use configuration file")
+	gnuflag.BoolVar(&options.dumpConfiguration, "dump-configuration", false, "Dump current configuration; output can be used as configuration file.")
+
 	gnuflag.Parse(true)
+	adjustLogLevel()
+
+	options = loadConfigurationFile(options)
+
+	if options.dumpConfiguration {
+		dumpConfiguration()
+		os.Exit(0)
+	}
 
 	if options.helpRequested {
 		gnuflag.Usage()
@@ -302,8 +379,11 @@ func parseCommandline() {
 		fmt.Printf("Version: %s\n", Version)
 		os.Exit(0)
 	}
-	if options.blockSelectionString != "" {
-		options.blockSelectionDuration = convertDurationString(options.blockSelectionString).Abs()
+	if options.BlockSelectionString != "" {
+		options.blockSelectionDuration = convertDurationString(options.BlockSelectionString).Abs()
+	}
+	if options.DestinationOption == UNSET {
+		options.DestinationOption = PANIC
 	}
 }
 
@@ -393,8 +473,8 @@ func copyFile(src, dst string) (int64, error) {
 func pickFiles(files Files) Files {
 	var suffixRegex = ".*$"
 
-	if len(options.suffixes) > 0 {
-		suffixRegex = "[.](" + strings.Join(options.suffixes, "|") + ")$"
+	if len(options.Suffixes) > 0 {
+		suffixRegex = "[.](" + strings.Join(options.Suffixes, "|") + ")$"
 	}
 	var re = regexp.MustCompile(suffixRegex)
 
@@ -433,7 +513,7 @@ func pickFiles(files Files) Files {
 	var pickedFiles = Files{}
 
 	log.Debug().Msgf("considering %d files for picking", len(eligibleFiles))
-	for i := 0; i < options.numberOfFiles; i++ {
+	for i := 0; i < options.NumberOfFiles; i++ {
 		if len(eligibleFiles) == 0 {
 			log.Warn().Msg("ran out of eligible files")
 			break
@@ -447,18 +527,18 @@ func pickFiles(files Files) Files {
 
 	if !options.dryRun {
 		if len(pickedFiles) > 0 {
-			_, err := os.Stat(options.destination)
+			_, err := os.Stat(options.Destination)
 			if err == nil {
-				switch options.destinationOption {
+				switch options.DestinationOption {
 				case DELETE:
-					log.Info().Msgf("deleting files in destination folder %s", options.destination)
-					dirEntries, err := os.ReadDir(options.destination)
+					log.Info().Msgf("deleting files in destination folder %s", options.Destination)
+					dirEntries, err := os.ReadDir(options.Destination)
 					if err != nil {
 						log.Fatal().Msg("unable to read destination folder")
 					}
 					for _, entry := range dirEntries {
-						log.Debug().Msgf("removing %s", path.Join(options.destination, entry.Name()))
-						err = os.Remove(path.Join(options.destination, entry.Name()))
+						log.Debug().Msgf("removing %s", path.Join(options.Destination, entry.Name()))
+						err = os.Remove(path.Join(options.Destination, entry.Name()))
 						if err != nil {
 							log.Fatal().Msgf("cannot remove %s: %s", entry.Name(), err.Error())
 						}
@@ -469,9 +549,9 @@ func pickFiles(files Files) Files {
 					log.Fatal().Msg("destination folder already exists, aborting")
 				}
 			}
-			err = os.MkdirAll(options.destination, os.ModePerm)
+			err = os.MkdirAll(options.Destination, os.ModePerm)
 			if err != nil {
-				log.Fatal().Msgf("error creating destination folder %s: %s", options.destination, err.Error())
+				log.Fatal().Msgf("error creating destination folder %s: %s", options.Destination, err.Error())
 			}
 			var suffixRegex = regexp.MustCompile("^(.*)[.]([^.]*)$")
 			for _, file := range pickedFiles {
@@ -487,13 +567,13 @@ func pickFiles(files Files) Files {
 						combinedFilename = fmt.Sprintf("%s-%d.%s", filename[1], counter, filename[2])
 					}
 					log.Debug().Msgf("attempting to copy %s -> %s", file.Path, combinedFilename)
-					_, err := copyFile(file.Path, path.Join(options.destination, combinedFilename))
+					_, err := copyFile(file.Path, path.Join(options.Destination, combinedFilename))
 					if err != nil {
-						if options.destinationOption == APPEND && err == ErrDestinationFileAlreadyExists {
+						if options.DestinationOption == APPEND && err == ErrDestinationFileAlreadyExists {
 							// Check for filename collision.
 							log.Debug().Msgf("filename collision")
 						} else {
-							log.Fatal().Msgf("error copying %s to %s (%s)", file.Path, options.destination, err.Error())
+							log.Fatal().Msgf("error copying %s to %s (%s)", file.Path, options.Destination, err.Error())
 						}
 					} else {
 						break
@@ -630,7 +710,6 @@ func initializeLogging() {
 
 func adjustLogLevel() {
 	if options.debugRequested || options.verboseRequested {
-		log.Info().Msg("setting log to debug")
 		zerolog.SetGlobalLevel(zerolog.DebugLevel)
 	}
 	if options.journalDLogging {
@@ -680,11 +759,10 @@ func getDatabaseStatistics(files Files) DatabaseStatistics {
 func main() {
 	initializeLogging()
 	parseCommandline()
-	adjustLogLevel()
 
 	if options.resetDatabase {
 		createDB(true)
-		if len(options.folders) == 0 {
+		if len(options.Folders) == 0 {
 			return
 		}
 	}
@@ -740,24 +818,24 @@ func main() {
 
 	if options.printDatabaseStatistics {
 		fmt.Println(getDatabaseStatistics(allFiles))
-		if len(options.folders) == 0 {
+		if len(options.Folders) == 0 {
 			return
 		}
 	}
 
-	if len(options.folders) == 0 {
+	if len(options.Folders) == 0 {
 		log.Fatal().Msg("No folders were specified. Use the --folder option.")
 	}
 
 	log.Info().Msgf("%s-%s", path.Base(os.Args[0]), Version)
-	log.Info().Msgf("will pick %d file(s) randomly matching suffixes %s", options.numberOfFiles, options.suffixes.String())
+	log.Info().Msgf("will pick %d file(s) randomly matching suffixes %s", options.NumberOfFiles, options.Suffixes.String())
 	if options.blockSelectionDuration > 0 {
 		log.Info().Msgf("will block files last picked less than %s ago", options.blockSelectionDuration.String())
 	}
-	log.Info().Msgf("source folders: %s", options.folders.String())
-	log.Info().Msgf("selected files will go into the '%s' folder", options.destination)
+	log.Info().Msgf("source folders: %s", options.Folders.String())
+	log.Info().Msgf("selected files will go into the '%s' folder", options.Destination)
 
-	var files = refreshLastPicked(allFiles, getFilesFromFolders(options.folders))
+	var files = refreshLastPicked(allFiles, getFilesFromFolders(options.Folders))
 	log.Debug().Msgf("before calling pickFiles: files at %p", files)
 	files = pickFiles(files)
 	log.Debug().Msgf("after calling pickFiles: files at %p", files)

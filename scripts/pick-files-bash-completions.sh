@@ -4,9 +4,11 @@ _complete_pick_files () {
   local cur prev
   local known_options=(
     --block-selection
+    --config
     --debug
     --destination
     --destination-option
+    --dump-configuration
     --dry-run
     --folder
     --journald
@@ -24,16 +26,20 @@ _complete_pick_files () {
   _init_completion || return
 
   case "$prev" in
+    --config)
+      _filedir
+      return
+      ;;
+    --destination-option)
+      readarray -t COMPREPLY < <(compgen -W 'panic delete append' -- "${cur}")
+      return
+      ;;
     --folder|--destination)
       _filedir
       return
       ;;
     --print-database-format)
       readarray -t COMPREPLY < <(compgen -W 'CSV JSON YAML' -- "${cur}")
-      return
-      ;;
-    --destination-option)
-      readarray -t COMPREPLY < <(compgen -W 'panic delete append' -- "${cur}")
       return
       ;;
   esac
