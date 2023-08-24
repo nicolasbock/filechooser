@@ -50,7 +50,7 @@ does not exist already. In this example, only files with suffixes `.jpg` or
 `.avi` are considered.
 
 For more details on all supported options, see the :doc:`Supported
-Options<pick-files-help>` page or run the command with `--help`.
+Options<supported-options>` page or run the command with `--help`.
 
 Installation
 ------------

@@ -6,7 +6,8 @@ Welcome to filechooser's documentation!
    :caption: Contents
    :numbered:
 
-   pick-files-help
+   supported-options
+   tips-and-tricks
    design_goals
 
 .. include:: ../../README.rst
