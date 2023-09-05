@@ -1,4 +1,4 @@
-pick-files: pick-files.go
+pick-files: *.go
 	go build -ldflags "-X main.Version=$(shell git describe --tags)" -v -o pick-files ./...
 
 .PHONY: test
