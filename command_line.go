@@ -7,6 +7,7 @@ import (
 	"path"
 
 	"github.com/juju/gnuflag"
+	"github.com/rs/zerolog/log"
 )
 
 // printUsage prints program usage.
@@ -86,10 +87,12 @@ func parseCommandline(options ProgramOptions) ProgramOptions {
 	options = loadConfigurationFile(options)
 
 	if deleteExisting {
+		log.Warn().Msg("This option is deprecated: Use --destination-option delete")
 		options.DestinationOption = DELETE
 	}
 
 	if appendFiles {
+		log.Warn().Msg("This option is deprecated: Use --destination-option append")
 		options.DestinationOption = APPEND
 	}
 
