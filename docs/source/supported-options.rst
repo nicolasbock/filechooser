@@ -62,12 +62,16 @@ Supported Options
 
    -N, --number  (= 1)
        The number of files to choose.
+   --append  (= false)
+       Append chosen files to existing destination folder (deprecated, use --destination-option append).
    --block-selection (= "")
        Block selection of files for a certain period. Possible units are (s)econds, (m)inutes, (h)ours, (d)days, and (w)weeks.
    --config (= "")
        Use configuration file
    --debug  (= false)
        Debug output.
+   --delete-existing  (= false)
+       Delete existing files in the destination folder instead of moving those files to a new location (deprecated, use --destination-option delete).
    --destination (= "output")
        The output PATH for the selected files.
    --destination-option  (= panic)

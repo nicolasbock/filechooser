@@ -48,6 +48,9 @@ Would choose at random 20 files from folder1 and folder2 (including sub-folders)
 // parseCommandline parses the command line arguments and stores the option
 // values.
 func parseCommandline(options ProgramOptions) ProgramOptions {
+	var deleteExisting bool
+	var appendFiles bool
+
 	gnuflag.Usage = printUsage
 	gnuflag.BoolVar(&options.debugRequested, "debug", false, "Debug output.")
 	gnuflag.BoolVar(&options.verboseRequested, "verbose", false, "Verbose output.")
@@ -59,6 +62,9 @@ func parseCommandline(options ProgramOptions) ProgramOptions {
 	gnuflag.StringVar(&options.Destination, "destination", "output", "The output PATH for the "+
 		"selected files.")
 	gnuflag.Var(&options.DestinationOption, "destination-option", "What to do when writing to destination; possible options are panic, append, and delete.")
+	gnuflag.BoolVar(&deleteExisting, "delete-existing", false, "Delete existing files in the "+
+		"destination folder instead of moving those files to a new location (deprecated, use --destination-option delete).")
+	gnuflag.BoolVar(&appendFiles, "append", false, "Append chosen files to existing destination folder (deprecated, use --destination-option append).")
 	gnuflag.BoolVar(&options.printVersion, "version", false, "Print the version of this program.")
 	gnuflag.Var(&options.Suffixes, "suffix", "Only consider files with this SUFFIX. For instance, to only load "+
 		"jpeg files you would specify either 'jpg' or '.jpg'. By default, all files are considered.")
@@ -78,6 +84,14 @@ func parseCommandline(options ProgramOptions) ProgramOptions {
 	adjustLogLevel(options)
 
 	options = loadConfigurationFile(options)
+
+	if deleteExisting {
+		options.DestinationOption = DELETE
+	}
+
+	if appendFiles {
+		options.DestinationOption = APPEND
+	}
 
 	if options.dumpConfiguration {
 		dumpConfiguration(options)
