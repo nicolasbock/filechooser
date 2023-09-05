@@ -3,14 +3,18 @@
 _complete_pick_files () {
   local cur prev
   local known_options=(
+    -N --number
+    --append
     --block-selection
     --config
     --debug
+    --delete-existing
     --destination
     --destination-option
-    --dump-configuration
     --dry-run
+    --dump-configuration
     --folder
+    -h --help
     --journald
     --print-database
     --print-database-format
@@ -19,8 +23,6 @@ _complete_pick_files () {
     --suffix
     --verbose
     --version
-    -h --help
-    -N --number
   )
 
   _init_completion || return
