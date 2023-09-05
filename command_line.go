@@ -2,10 +2,48 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"os"
+	"path"
 
 	"github.com/juju/gnuflag"
 )
+
+// printUsage prints program usage.
+func printUsage() {
+	fmt.Fprintf(os.Stderr, "Usage of %s:\n", path.Base(os.Args[0]))
+	fmt.Fprintf(os.Stderr, `
+Introduction
+============
+
+pick-files is a script that randomly selects a specific number of files from a set of folders and copies these files to a single destination folder. During repeat runs the previously selected files are excluded from the selection for a specific time period that can be specified.
+
+Usage Example
+-------------
+
+    pick-files --number 20 \
+        --destination output \
+        --suffix .jpg --suffix .avi \
+        --folder folder1 --folder folder2
+
+Would choose at random 20 files from folder1 and folder2 (including sub-folders) and copy those files into output. The output is created if it does not exist already. In this example, only files with suffixes .jpg or .avi are considered.
+
+`)
+	// Read tips and tricks
+	f, err := os.Open("/usr/share/doc/pick-files/tips-and-tricks.rst")
+	if err != nil {
+		f, err = os.Open("docs/source/tips-and-tricks.rst")
+	}
+	if err == nil {
+		defer f.Close()
+		tipsAndTricks, err := io.ReadAll(f)
+		if err == nil {
+			fmt.Fprintln(os.Stderr, string(tipsAndTricks))
+		}
+	}
+	fmt.Fprintf(os.Stderr, "Options\n-------\n\n")
+	gnuflag.PrintDefaults()
+}
 
 // parseCommandline parses the command line arguments and stores the option
 // values.
