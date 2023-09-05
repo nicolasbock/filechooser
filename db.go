@@ -5,11 +5,37 @@ import (
 	"encoding/csv"
 	"encoding/json"
 	"os"
+	"path"
 	"time"
 
 	"github.com/rs/zerolog/log"
 	"gopkg.in/yaml.v3"
 )
+
+// getDBPath returns the full path to the database file.
+func getDBPath() string {
+	var fullDBFilename = dbFilename
+	dbPath, pathSet := os.LookupEnv("SNAP_USER_DATA")
+	if pathSet {
+		fullDBFilename = path.Join(dbPath, fullDBFilename)
+	}
+	return fullDBFilename
+}
+
+// createDB creates a new database. If `force` is true then reset an existing
+// database.
+func createDB(force bool) {
+	_, err := os.Stat(getDBPath())
+	if err != nil {
+		return
+	}
+	if force {
+		log.Info().Msg("resetting database")
+		os.Remove(getDBPath())
+	} else {
+		log.Fatal().Msg("Database already exists")
+	}
+}
 
 // expireOldDBEntries returns a Files object in which all Files have a LastSeen
 // timestamp within maxAge.

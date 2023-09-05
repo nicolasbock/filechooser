@@ -447,31 +447,6 @@ func pickFiles(options ProgramOptions, files Files) Files {
 	return files
 }
 
-// getDBPath returns the full path to the database file.
-func getDBPath() string {
-	var fullDBFilename = dbFilename
-	dbPath, pathSet := os.LookupEnv("SNAP_USER_DATA")
-	if pathSet {
-		fullDBFilename = path.Join(dbPath, fullDBFilename)
-	}
-	return fullDBFilename
-}
-
-// createDB creates a new database. If `force` is true then reset an existing
-// database.
-func createDB(force bool) {
-	_, err := os.Stat(getDBPath())
-	if err != nil {
-		return
-	}
-	if force {
-		log.Info().Msg("resetting database")
-		os.Remove(getDBPath())
-	} else {
-		log.Fatal().Msg("Database already exists")
-	}
-}
-
 // refreshLastPicked refreshes the LastPicked timestamp in newFiles from entries
 // in oldFiles. It returns a new Files lit with the same files as in newFiles
 // but with updated timestamps.
