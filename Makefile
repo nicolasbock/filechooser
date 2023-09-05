@@ -1,5 +1,5 @@
 pick-files: pick-files.go
-	go build -ldflags "-X main.Version=$(shell git describe --tags)" -o pick-files ./...
+	go build -ldflags "-X main.Version=$(shell git describe --tags)" -v -o pick-files ./...
 
 .PHONY: test
 test:
@@ -8,3 +8,7 @@ test:
 .PHONY: coverage
 coverage:
 	go test -cover -v
+
+.PHONY: clean
+clean:
+	rm pick-files

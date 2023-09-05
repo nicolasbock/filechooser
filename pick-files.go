@@ -18,8 +18,6 @@ import (
 	"time"
 
 	"github.com/juju/gnuflag"
-	"github.com/rs/zerolog"
-	"github.com/rs/zerolog/journald"
 	"github.com/rs/zerolog/log"
 	"gopkg.in/yaml.v3"
 )
@@ -221,10 +219,6 @@ func (o ProgramOptions) String() string {
 	return result
 }
 
-var options = ProgramOptions{
-	dbExpirationAge: 120 * 24 * time.Hour, // Expire DB entries older than 120 days
-}
-
 // printUsage prints program usage.
 func printUsage() {
 	fmt.Fprintf(os.Stderr, "Usage of %s:\n", path.Base(os.Args[0]))
@@ -291,7 +285,7 @@ func convertDurationString(durationString string) time.Duration {
 }
 
 // dumpConfiguration dumps the current configuration to standard output.
-func dumpConfiguration() {
+func dumpConfiguration(options ProgramOptions) {
 	old, _ := yaml.Marshal(options)
 	fmt.Print(string(old))
 }
@@ -333,61 +327,6 @@ func loadConfigurationFile(o ProgramOptions) ProgramOptions {
 	}
 	log.Debug().Msgf("loaded configuration: %s", result.String())
 	return result
-}
-
-// parseCommandline parses the command line arguments and stores the option
-// values.
-func parseCommandline() {
-	gnuflag.Usage = printUsage
-	gnuflag.BoolVar(&options.debugRequested, "debug", false, "Debug output.")
-	gnuflag.BoolVar(&options.verboseRequested, "verbose", false, "Verbose output.")
-	gnuflag.BoolVar(&options.dryRun, "dry-run", false, "If set then the chosen files are only shown and not copied.")
-	gnuflag.Var(&options.Folders, "folder", "A folder PATH to consider when picking files; can be used multiple times; "+
-		"works recursively, meaning all sub-folders and their files are included in the selection.")
-	gnuflag.IntVar(&options.NumberOfFiles, "number", 1, "The number of files to choose.")
-	gnuflag.IntVar(&options.NumberOfFiles, "N", 1, "The number of files to choose.")
-	gnuflag.StringVar(&options.Destination, "destination", "output", "The output PATH for the "+
-		"selected files.")
-	gnuflag.Var(&options.DestinationOption, "destination-option", "What to do when writing to destination; possible options are panic, append, and delete.")
-	gnuflag.BoolVar(&options.printVersion, "version", false, "Print the version of this program.")
-	gnuflag.Var(&options.Suffixes, "suffix", "Only consider files with this SUFFIX. For instance, to only load "+
-		"jpeg files you would specify either 'jpg' or '.jpg'. By default, all files are considered.")
-	gnuflag.BoolVar(&options.helpRequested, "h", false, "This help message.")
-	gnuflag.BoolVar(&options.helpRequested, "help", false, "This help message.")
-	gnuflag.BoolVar(&options.resetDatabase, "reset-database", false, "Reset the database (re-initialize). Use intended for testing only.")
-	gnuflag.StringVar(&options.printDatabase, "print-database", "", "Print the internal database to a file and exit; the special name `-` means standard output.")
-	gnuflag.Var(&options.printDatabaseFormat, "print-database-format", "Format of printed database; possible options are CSV, JSON, and YAML.")
-	gnuflag.StringVar(&options.BlockSelectionString, "block-selection", "", "Block selection of files for a certain "+
-		"period. Possible units are (s)econds, (m)inutes, (h)ours, (d)days, and (w)weeks.")
-	gnuflag.BoolVar(&options.journalDLogging, "journald", false, "Log to journald.")
-	gnuflag.BoolVar(&options.printDatabaseStatistics, "print-database-statistics", false, "Print some statistics of the internal database.")
-	gnuflag.StringVar(&options.configurationFile, "config", "", "Use configuration file")
-	gnuflag.BoolVar(&options.dumpConfiguration, "dump-configuration", false, "Dump current configuration; output can be used as configuration file.")
-
-	gnuflag.Parse(true)
-	adjustLogLevel()
-
-	options = loadConfigurationFile(options)
-
-	if options.dumpConfiguration {
-		dumpConfiguration()
-		os.Exit(0)
-	}
-
-	if options.helpRequested {
-		gnuflag.Usage()
-		os.Exit(0)
-	}
-	if options.printVersion {
-		fmt.Printf("Version: %s\n", Version)
-		os.Exit(0)
-	}
-	if options.BlockSelectionString != "" {
-		options.blockSelectionDuration = convertDurationString(options.BlockSelectionString).Abs()
-	}
-	if options.DestinationOption == UNSET {
-		options.DestinationOption = PANIC
-	}
 }
 
 // getFilesFromFolders recursively reads all files in a list of folders and returns a list
@@ -473,7 +412,7 @@ func copyFile(src, dst string) (int64, error) {
 // pickFiles randomly picks files and copies those to the destination folder.
 // The function updates the timestampes on the chosen files and returns the
 // updated list of Files.
-func pickFiles(files Files) Files {
+func pickFiles(options ProgramOptions, files Files) Files {
 	var suffixRegex = ".*$"
 
 	if len(options.Suffixes) > 0 {
@@ -619,41 +558,6 @@ func createDB(force bool) {
 	}
 }
 
-// loadDB loads file information from a previous run.
-func loadDB() Files {
-	var result = newDB()
-	_, err := os.Stat(getDBPath())
-	if err != nil {
-		log.Info().Msgf("could not find old database at %s, will create new one", getDBPath())
-		return Files{}
-	}
-	encoded, err := os.ReadFile(getDBPath())
-	if err != nil {
-		log.Fatal().Msgf("error reading database: %s", err.Error())
-	}
-	err = json.Unmarshal(encoded, &result)
-	if err != nil {
-		log.Fatal().Msgf("error unmarshalling database content: %s", err.Error())
-	}
-	log.Debug().Msgf("read %d records from database", len(result.Files))
-	return result.Files
-}
-
-// storeDB stores file information from this run.
-func storeDB(allFiles Files) {
-	log.Debug().Msgf("writing database with %d records", len(allFiles))
-	var result = newDB()
-	result.Files = allFiles
-	encoded, err := json.MarshalIndent(result, "", "  ")
-	if err != nil {
-		log.Fatal().Msgf("error marshalling data: %s", err.Error())
-	}
-	err = os.WriteFile(getDBPath(), encoded, 0644)
-	if err != nil {
-		log.Fatal().Msgf("error writing database: %s", err.Error())
-	}
-}
-
 // refreshLastPicked refreshes the LastPicked timestamp in newFiles from entries
 // in oldFiles. It returns a new Files lit with the same files as in newFiles
 // but with updated timestamps.
@@ -704,22 +608,6 @@ func mergeFiles(a, b Files) Files {
 	return result
 }
 
-// initializeLogging initializes the logger.
-func initializeLogging() {
-	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
-	zerolog.SetGlobalLevel(zerolog.InfoLevel)
-	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
-}
-
-func adjustLogLevel() {
-	if options.debugRequested || options.verboseRequested {
-		zerolog.SetGlobalLevel(zerolog.DebugLevel)
-	}
-	if options.journalDLogging {
-		log.Logger = log.Output(journald.NewJournalDWriter())
-	}
-}
-
 // expireOldDBEntries returns a Files object in which all Files have a LastSeen
 // timestamp within maxAge.
 func expireOldDBEntries(files Files, maxAge time.Duration) Files {
@@ -759,9 +647,62 @@ func getDatabaseStatistics(files Files) DatabaseStatistics {
 	return statistics
 }
 
+// printDatabase prints the database.
+func printDatabase(options ProgramOptions, allFiles Files) {
+	var fileString []byte
+	if len(allFiles) == 0 {
+		log.Info().Msg("Database empty")
+		os.Exit(0)
+	}
+	switch options.printDatabaseFormat {
+	case CSV:
+		b := new(bytes.Buffer)
+		csvWriter := csv.NewWriter(b)
+		headers := []string{
+			"Name",
+			"Path",
+			"md5sum",
+			"Last Picked",
+			"Last Seen",
+		}
+		csvWriter.Write(headers)
+		for _, file := range allFiles {
+			csvWriter.Write([]string{file.Name, file.Path, file.Md5sum, file.LastPicked.String(), file.LastSeen.String()})
+		}
+		csvWriter.Flush()
+		fileString = b.Bytes()
+	case JSON:
+		fileString, _ = json.MarshalIndent(allFiles, "", "  ")
+	case YAML:
+		fileString, _ = yaml.Marshal(allFiles)
+	}
+	var f *os.File = os.Stdout
+	if options.printDatabase != "-" {
+		_, err := os.Stat(options.printDatabase)
+		if err == nil {
+			log.Fatal().Msgf("database output file %s already exists", options.printDatabase)
+		}
+		f, err = os.Create(options.printDatabase)
+		if err != nil {
+			log.Fatal().Msgf("could not create database file %s: %s", options.printDatabase, err.Error())
+		}
+		defer f.Close()
+	}
+	n, err := f.WriteString(string(fileString))
+	if err != nil {
+		log.Fatal().Msgf("error writing to database files %s: %s", options.printDatabase, err.Error())
+	}
+	log.Debug().Msgf("wrote %d bytes to %s", n, options.printDatabase)
+
+}
+
 func main() {
+	var options ProgramOptions = ProgramOptions{
+		dbExpirationAge: 120 * 24 * time.Hour, // Expire DB entries older than 120 days
+	}
+
 	initializeLogging()
-	parseCommandline()
+	options = parseCommandline(options)
 
 	if options.resetDatabase {
 		createDB(true)
@@ -769,53 +710,10 @@ func main() {
 			return
 		}
 	}
-	var allFiles = loadDB()
+	var allFiles Files = loadDB()
 
 	if options.printDatabase != "" {
-		var fileString []byte
-		if len(allFiles) == 0 {
-			log.Info().Msg("Database empty")
-			os.Exit(0)
-		}
-		switch options.printDatabaseFormat {
-		case CSV:
-			b := new(bytes.Buffer)
-			csvWriter := csv.NewWriter(b)
-			headers := []string{
-				"Name",
-				"Path",
-				"md5sum",
-				"Last Picked",
-				"Last Seen",
-			}
-			csvWriter.Write(headers)
-			for _, file := range allFiles {
-				csvWriter.Write([]string{file.Name, file.Path, file.Md5sum, file.LastPicked.String(), file.LastSeen.String()})
-			}
-			csvWriter.Flush()
-			fileString = b.Bytes()
-		case JSON:
-			fileString, _ = json.MarshalIndent(allFiles, "", "  ")
-		case YAML:
-			fileString, _ = yaml.Marshal(allFiles)
-		}
-		var f *os.File = os.Stdout
-		if options.printDatabase != "-" {
-			_, err := os.Stat(options.printDatabase)
-			if err == nil {
-				log.Fatal().Msgf("database output file %s already exists", options.printDatabase)
-			}
-			f, err = os.Create(options.printDatabase)
-			if err != nil {
-				log.Fatal().Msgf("could not create database file %s: %s", options.printDatabase, err.Error())
-			}
-			defer f.Close()
-		}
-		n, err := f.WriteString(string(fileString))
-		if err != nil {
-			log.Fatal().Msgf("error writing to database files %s: %s", options.printDatabase, err.Error())
-		}
-		log.Debug().Msgf("wrote %d bytes to %s", n, options.printDatabase)
+		printDatabase(options, allFiles)
 		return
 	}
 
@@ -838,9 +736,9 @@ func main() {
 	log.Info().Msgf("source folders: %s", options.Folders.String())
 	log.Info().Msgf("selected files will go into the '%s' folder", options.Destination)
 
-	var files = refreshLastPicked(allFiles, getFilesFromFolders(options.Folders))
+	var files Files = refreshLastPicked(allFiles, getFilesFromFolders(options.Folders))
 	log.Debug().Msgf("before calling pickFiles: files at %p", files)
-	files = pickFiles(files)
+	files = pickFiles(options, files)
 	log.Debug().Msgf("after calling pickFiles: files at %p", files)
 	allFiles = mergeFiles(allFiles, files)
 	allFiles = expireOldDBEntries(allFiles, options.dbExpirationAge)
