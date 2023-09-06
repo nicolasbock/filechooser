@@ -33,4 +33,4 @@ journal and can be checked with
 
 .. code-block:: console
 
-   $ journalctl --unit pick-files-daily.service
+   $ journalctl --identifier pick-files

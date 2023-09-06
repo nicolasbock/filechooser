@@ -55,7 +55,7 @@ Supported Options
 
    .. code-block:: console
 
-      $ journalctl --unit pick-files-daily.service
+      $ journalctl --identifier pick-files
 
    Options
    -------
