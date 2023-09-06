@@ -50,8 +50,6 @@ _complete_pick_files () {
     readarray -t COMPREPLY < <(compgen -W "${known_options[*]}" -- "${cur}" )
     return
   fi
-
-  _filedir
 }
 
 complete -F _complete_pick_files pick-files
