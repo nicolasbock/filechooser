@@ -34,6 +34,7 @@ jobs:
         run: |
           set -e -u -x
           PICKFILES=./pick-files ./scripts/update-usage-information.sh
+          (( $(goftm -d *.go | wc -l) == 0 )) || false
           gofmt -w *.go
           (( $(git diff | wc -l) == 0 )) || false
 
