@@ -380,7 +380,7 @@ func pickFiles(options ProgramOptions, files Files) Files {
 					if err != nil {
 						if options.DestinationOption == APPEND && err == ErrDestinationFileAlreadyExists {
 							// Check for filename collision.
-							log.Debug().Msgf("filename collision")
+							log.Debug().Msgf("filename collision: %s already exists", file.Path)
 						} else {
 							log.Fatal().Msgf("error copying %s to %s (%s)", file.Path, options.Destination, err.Error())
 						}
