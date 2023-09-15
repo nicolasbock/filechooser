@@ -289,8 +289,6 @@ func pickFiles(options ProgramOptions, files Files) Files {
 
 	var temp Files = files
 	var eligibleFiles Files = Files{}
-	log.Debug().Msgf("temp at %p", temp)
-	log.Debug().Msgf("eligible files at %p", eligibleFiles)
 
 	// Down-select based on suffix.
 	log.Debug().Msg("filter files by suffix")
@@ -316,8 +314,6 @@ func pickFiles(options ProgramOptions, files Files) Files {
 	} else {
 		log.Debug().Msg("no block selection duration set")
 	}
-
-	log.Debug().Msgf("eligible files at %p", eligibleFiles)
 
 	var pickedFiles = Files{}
 
@@ -491,9 +487,7 @@ func main() {
 	log.Info().Msgf("selected files will go into the '%s' folder", options.Destination)
 
 	var files Files = refreshLastPicked(allFiles, getFilesFromFolders(options.Folders))
-	log.Debug().Msgf("before calling pickFiles: files at %p", files)
 	files = pickFiles(options, files)
-	log.Debug().Msgf("after calling pickFiles: files at %p", files)
 	allFiles = mergeFiles(allFiles, files)
 	allFiles = expireOldDBEntries(allFiles, options.dbExpirationAge)
 	storeDB(allFiles)
