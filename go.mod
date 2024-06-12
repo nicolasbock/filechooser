@@ -1,8 +1,8 @@
 module github.com/nicolasbock/pick-files
 
-go 1.21
+go 1.22
 
-toolchain go1.21.5
+toolchain go1.22.4
 
 require (
 	github.com/juju/gnuflag v1.0.0
